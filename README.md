@@ -2,6 +2,10 @@
 
 DNF 86JP 服务端模拟器。配合 `86JPDump.exe` 客户端使用。
 
+## 社区交流
+
+Discord 社区: https://discord.gg/3wct6SZp
+
 ## 构建
 
 需要 .NET SDK（提供 `dotnet` CLI）。NuGet 依赖自动下载，无需额外配置。
