@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Code\\86JpServer\\Tool\\PvfLib\\PvfLib.csproj": {}
+    "D:\\DNF\\D0FS4A12模拟端研究\\_tmp_ServerS4A12_remote\\Tool\\PvfLib\\PvfLib.csproj": {}
   },
   "projects": {
-    "C:\\Code\\86JpServer\\Tool\\PvfLib\\PvfLib.csproj": {
+    "D:\\DNF\\D0FS4A12模拟端研究\\_tmp_ServerS4A12_remote\\Tool\\PvfLib\\PvfLib.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Code\\86JpServer\\Tool\\PvfLib\\PvfLib.csproj",
+        "projectUniqueName": "D:\\DNF\\D0FS4A12模拟端研究\\_tmp_ServerS4A12_remote\\Tool\\PvfLib\\PvfLib.csproj",
         "projectName": "PvfLib",
-        "projectPath": "C:\\Code\\86JpServer\\Tool\\PvfLib\\PvfLib.csproj",
+        "projectPath": "D:\\DNF\\D0FS4A12模拟端研究\\_tmp_ServerS4A12_remote\\Tool\\PvfLib\\PvfLib.csproj",
         "packagesPath": "C:\\Users\\Administrator\\.nuget\\packages\\",
-        "outputPath": "C:\\Code\\86JpServer\\Tool\\PvfLib\\obj\\",
+        "outputPath": "D:\\DNF\\D0FS4A12模拟端研究\\_tmp_ServerS4A12_remote\\Tool\\PvfLib\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Administrator\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -50,7 +50,7 @@
               "autoReferenced": true
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.421\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.422\\RuntimeIdentifierGraph.json"
         }
       }
     }
