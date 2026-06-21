@@ -1,0 +1,9 @@
+C:\Code\86JpServer\Tool\PvfLib\bin\Debug\net472\PvfLib.dll
+C:\Code\86JpServer\Tool\PvfLib\bin\Debug\net472\PvfLib.pdb
+C:\Code\86JpServer\Tool\PvfLib\obj\Debug\net472\PvfLib.csproj.AssemblyReference.cache
+C:\Code\86JpServer\Tool\PvfLib\obj\Debug\net472\PvfLib.GeneratedMSBuildEditorConfig.editorconfig
+C:\Code\86JpServer\Tool\PvfLib\obj\Debug\net472\PvfLib.AssemblyInfoInputs.cache
+C:\Code\86JpServer\Tool\PvfLib\obj\Debug\net472\PvfLib.AssemblyInfo.cs
+C:\Code\86JpServer\Tool\PvfLib\obj\Debug\net472\PvfLib.csproj.CoreCompileInputs.cache
+C:\Code\86JpServer\Tool\PvfLib\obj\Debug\net472\PvfLib.dll
+C:\Code\86JpServer\Tool\PvfLib\obj\Debug\net472\PvfLib.pdb
