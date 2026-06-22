@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 using DfoServer.Game.SelectCharacter;
 using DfoServer.Infrastructure;
 
@@ -18,7 +18,7 @@ namespace DfoServer.Game.CharacterData
         public bool HasData(int characterId)
         {
             using (var conn = Open())
-            using (var cmd = new SQLiteCommand("SELECT COUNT(*) FROM character_subtype1_fields WHERE character_id=@cid", conn))
+            using (var cmd = new SqliteCommand("SELECT COUNT(*) FROM character_subtype1_fields WHERE character_id=@cid", conn))
             {
                 cmd.Parameters.AddWithValue("@cid", characterId);
                 return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
@@ -32,7 +32,7 @@ namespace DfoServer.Game.CharacterData
             using (var conn = Open())
             {
                 
-                using (var cmd = new SQLiteCommand(@"SELECT
+                using (var cmd = new SqliteCommand(@"SELECT
                     stat_hp_max, stat_mp_max, stat_physical_attack, stat_physical_defense,
                     stat_magical_attack, stat_magical_defense, stat_fire_resistance, stat_water_resistance,
                     stat_dark_resistance, stat_light_resistance, stat_inventory_limit,
@@ -83,7 +83,7 @@ namespace DfoServer.Game.CharacterData
                 }
 
                 
-                using (var cmd = new SQLiteCommand("SELECT exp, ex_equip_slot_stat FROM characters WHERE character_id=@cid", conn))
+                using (var cmd = new SqliteCommand("SELECT exp, ex_equip_slot_stat FROM characters WHERE character_id=@cid", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
                     using (var r = cmd.ExecuteReader())
@@ -98,7 +98,7 @@ namespace DfoServer.Game.CharacterData
 
                 
                 
-                using (var cmd = new SQLiteCommand("SELECT slot, item_id, raw_entry FROM character_equipped_entries WHERE character_id=@cid ORDER BY slot", conn))
+                using (var cmd = new SqliteCommand("SELECT slot, item_id, raw_entry FROM character_equipped_entries WHERE character_id=@cid ORDER BY slot", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
                     using (var r = cmd.ExecuteReader())
@@ -126,7 +126,7 @@ namespace DfoServer.Game.CharacterData
                 }
 
                 
-                using (var cmd = new SQLiteCommand("SELECT dim_key, val1, val2 FROM character_dimensions WHERE character_id=@cid ORDER BY sort_order", conn))
+                using (var cmd = new SqliteCommand("SELECT dim_key, val1, val2 FROM character_dimensions WHERE character_id=@cid ORDER BY sort_order", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
                     using (var r = cmd.ExecuteReader())
@@ -144,7 +144,7 @@ namespace DfoServer.Game.CharacterData
                 }
 
                 
-                using (var cmd = new SQLiteCommand("SELECT flag1, flag2, flag3, flag4 FROM character_dimension_flags WHERE character_id=@cid", conn))
+                using (var cmd = new SqliteCommand("SELECT flag1, flag2, flag3, flag4 FROM character_dimension_flags WHERE character_id=@cid", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
                     using (var r = cmd.ExecuteReader())
@@ -160,7 +160,7 @@ namespace DfoServer.Game.CharacterData
                 }
 
                 
-                using (var cmd = new SQLiteCommand("SELECT value_u32, value_u16a, value_u16b FROM character_pvp_results WHERE character_id=@cid ORDER BY sort_order", conn))
+                using (var cmd = new SqliteCommand("SELECT value_u32, value_u16a, value_u16b FROM character_pvp_results WHERE character_id=@cid ORDER BY sort_order", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
                     using (var r = cmd.ExecuteReader())
@@ -178,7 +178,7 @@ namespace DfoServer.Game.CharacterData
                 }
 
                 
-                using (var cmd = new SQLiteCommand("SELECT abuse_value FROM character_abuse_values WHERE character_id=@cid ORDER BY sort_order", conn))
+                using (var cmd = new SqliteCommand("SELECT abuse_value FROM character_abuse_values WHERE character_id=@cid ORDER BY sort_order", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
                     using (var r = cmd.ExecuteReader())
@@ -192,9 +192,9 @@ namespace DfoServer.Game.CharacterData
             return snap;
         }
 
-        private SQLiteConnection Open()
+        private SqliteConnection Open()
         {
-            var conn = new SQLiteConnection(_connectionString);
+            var conn = new SqliteConnection(_connectionString);
             conn.Open();
             return conn;
         }

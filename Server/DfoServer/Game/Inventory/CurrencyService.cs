@@ -1,11 +1,11 @@
 using System;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 
 namespace DfoServer.Game.Inventory
 {
     public static class CurrencyService
     {
-        public static WalletSnapshot LoadWallet(SQLiteConnection connection, SQLiteTransaction transaction, int characterId)
+        public static WalletSnapshot LoadWallet(SqliteConnection connection, SqliteTransaction transaction, int characterId)
         {
             var w = new WalletSnapshot();
             using (var cmd = connection.CreateCommand())
@@ -29,12 +29,12 @@ namespace DfoServer.Game.Inventory
             return w;
         }
 
-        public static void UpdateGold(SQLiteConnection connection, SQLiteTransaction transaction, int characterId, int newGold)
+        public static void UpdateGold(SqliteConnection connection, SqliteTransaction transaction, int characterId, int newGold)
         {
             UpdateCurrencySlot(connection, transaction, characterId, 0, newGold);
         }
 
-        public static void UpdateCera(SQLiteConnection connection, SQLiteTransaction transaction, int characterId, int newCera)
+        public static void UpdateCera(SqliteConnection connection, SqliteTransaction transaction, int characterId, int newCera)
         {
             using (var cmd = connection.CreateCommand())
             {
@@ -46,7 +46,7 @@ namespace DfoServer.Game.Inventory
             }
         }
 
-        private static void UpdateCurrencySlot(SQLiteConnection connection, SQLiteTransaction transaction, int characterId, int slot, int value)
+        private static void UpdateCurrencySlot(SqliteConnection connection, SqliteTransaction transaction, int characterId, int slot, int value)
         {
             using (var cmd = connection.CreateCommand())
             {
@@ -59,7 +59,7 @@ namespace DfoServer.Game.Inventory
             }
         }
 
-        public static int LoadCera(SQLiteConnection connection, int characterId)
+        public static int LoadCera(SqliteConnection connection, int characterId)
         {
             using (var cmd = connection.CreateCommand())
             {
@@ -72,7 +72,7 @@ namespace DfoServer.Game.Inventory
             }
         }
 
-        public static void MigrateCeraFromPacketTemplates(SQLiteConnection connection)
+        public static void MigrateCeraFromPacketTemplates(SqliteConnection connection)
         {
             using (var check = connection.CreateCommand())
             {

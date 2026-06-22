@@ -2,7 +2,7 @@ using DfoServer.Game.SelectCharacter;
 using DfoServer.Infrastructure;
 using System;
 using System.Collections.Generic;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 
 namespace DfoServer.Game.CharacterData
 {
@@ -20,11 +20,11 @@ namespace DfoServer.Game.CharacterData
         public SkillInfoSnapshot LoadSkills(int characterId)
         {
             var snapshot = new SkillInfoSnapshot();
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
 
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT page_index, page_header, slot, skill_id, level, extra_values FROM character_skills WHERE character_id = @cid ORDER BY page_index, slot", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -60,7 +60,7 @@ namespace DfoServer.Game.CharacterData
                     }
                 }
 
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT tail0, tail1 FROM character_skill_tail WHERE character_id = @cid", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -79,17 +79,17 @@ namespace DfoServer.Game.CharacterData
 
         public void SaveSkills(int characterId, SkillInfoSnapshot snapshot)
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
                 using (var tx = conn.BeginTransaction())
                 {
-                    using (var cmd = new SQLiteCommand("DELETE FROM character_skills WHERE character_id = @cid", conn, tx))
+                    using (var cmd = new SqliteCommand("DELETE FROM character_skills WHERE character_id = @cid", conn, tx))
                     {
                         cmd.Parameters.AddWithValue("@cid", characterId);
                         cmd.ExecuteNonQuery();
                     }
-                    using (var cmd = new SQLiteCommand("DELETE FROM character_skill_tail WHERE character_id = @cid", conn, tx))
+                    using (var cmd = new SqliteCommand("DELETE FROM character_skill_tail WHERE character_id = @cid", conn, tx))
                     {
                         cmd.Parameters.AddWithValue("@cid", characterId);
                         cmd.ExecuteNonQuery();
@@ -100,7 +100,7 @@ namespace DfoServer.Game.CharacterData
                         var page = snapshot.Pages[pageIdx];
                         if (page.Entries.Count == 0)
                         {
-                            using (var cmd = new SQLiteCommand(
+                            using (var cmd = new SqliteCommand(
                                 "INSERT INTO character_skills (character_id, page_index, page_header, slot, skill_id, level) VALUES (@cid, @page, @header, -1, 0, 0)", conn, tx))
                             {
                                 cmd.Parameters.AddWithValue("@cid", characterId);
@@ -111,7 +111,7 @@ namespace DfoServer.Game.CharacterData
                         }
                         foreach (var entry in page.Entries)
                         {
-                            using (var cmd = new SQLiteCommand(
+                            using (var cmd = new SqliteCommand(
                                 "INSERT INTO character_skills (character_id, page_index, page_header, slot, skill_id, level, extra_values) VALUES (@cid, @page, @header, @slot, @sid, @lvl, @extra)", conn, tx))
                             {
                                 cmd.Parameters.AddWithValue("@cid", characterId);
@@ -126,7 +126,7 @@ namespace DfoServer.Game.CharacterData
                         }
                     }
 
-                    using (var cmd = new SQLiteCommand(
+                    using (var cmd = new SqliteCommand(
                         "INSERT INTO character_skill_tail (character_id, tail0, tail1) VALUES (@cid, @t0, @t1)", conn, tx))
                     {
                         cmd.Parameters.AddWithValue("@cid", characterId);
@@ -142,10 +142,10 @@ namespace DfoServer.Game.CharacterData
 
         public bool HasSkills(int characterId)
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand("SELECT COUNT(*) FROM character_skills WHERE character_id = @cid", conn))
+                using (var cmd = new SqliteCommand("SELECT COUNT(*) FROM character_skills WHERE character_id = @cid", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
                     return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
@@ -160,7 +160,7 @@ namespace DfoServer.Game.CharacterData
         public void SwapSkillSlot(int characterId, int page, int slot1, int slot2)
         {
             if (slot1 == slot2) return;
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
                 using (var tx = conn.BeginTransaction())
@@ -173,9 +173,9 @@ namespace DfoServer.Game.CharacterData
             }
         }
 
-        private static void MoveSkillSlot(SQLiteConnection conn, SQLiteTransaction tx, int cid, int page, int fromSlot, int toSlot)
+        private static void MoveSkillSlot(SqliteConnection conn, SqliteTransaction tx, int cid, int page, int fromSlot, int toSlot)
         {
-            using (var cmd = new SQLiteCommand(
+            using (var cmd = new SqliteCommand(
                 "UPDATE character_skills SET slot = @to WHERE character_id = @cid AND page_index = @page AND slot = @from", conn, tx))
             {
                 cmd.Parameters.AddWithValue("@to", toSlot);
@@ -201,10 +201,10 @@ namespace DfoServer.Game.CharacterData
         public CreatureItemListSnapshot LoadCreatures(int characterId)
         {
             var snapshot = new CreatureItemListSnapshot();
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT creature_key, field04, mode_flag, progress_value, mode1_field0a, mode1_field0b, field_after_value, creature_text, tail_flag FROM character_creatures WHERE character_id = @cid ORDER BY sort_order", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -233,12 +233,12 @@ namespace DfoServer.Game.CharacterData
 
         public void SaveCreatures(int characterId, CreatureItemListSnapshot snapshot)
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
                 using (var tx = conn.BeginTransaction())
                 {
-                    using (var cmd = new SQLiteCommand("DELETE FROM character_creatures WHERE character_id = @cid", conn, tx))
+                    using (var cmd = new SqliteCommand("DELETE FROM character_creatures WHERE character_id = @cid", conn, tx))
                     {
                         cmd.Parameters.AddWithValue("@cid", characterId);
                         cmd.ExecuteNonQuery();
@@ -247,7 +247,7 @@ namespace DfoServer.Game.CharacterData
                     for (int i = 0; i < snapshot.Entries.Count; i++)
                     {
                         var entry = snapshot.Entries[i];
-                        using (var cmd = new SQLiteCommand(
+                        using (var cmd = new SqliteCommand(
                             "INSERT INTO character_creatures (character_id, sort_order, creature_key, field04, mode_flag, progress_value, mode1_field0a, mode1_field0b, field_after_value, creature_text, tail_flag) VALUES (@cid, @ord, @key, @f04, @mf, @pv, @m0a, @m0b, @fav, @txt, @tf)", conn, tx))
                         {
                             cmd.Parameters.AddWithValue("@cid", characterId);
@@ -272,10 +272,10 @@ namespace DfoServer.Game.CharacterData
 
         public bool HasCreatures(int characterId)
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand("SELECT COUNT(*) FROM character_creatures WHERE character_id = @cid", conn))
+                using (var cmd = new SqliteCommand("SELECT COUNT(*) FROM character_creatures WHERE character_id = @cid", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
                     return Convert.ToInt32(cmd.ExecuteScalar()) > 0;

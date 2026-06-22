@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using DfoServer.Game.Session;
+using Microsoft.Data.Sqlite;
 
 namespace DfoServer.Game.Quests
 {
@@ -87,10 +88,10 @@ namespace DfoServer.Game.Quests
 
             var clearedSet = new System.Collections.Generic.HashSet<int>();
             var clearedFlags = new System.Collections.Generic.Dictionary<int, int>();
-            using (var conn = new System.Data.SQLite.SQLiteConnection(_connStr))
+            using (var conn = new SqliteConnection(_connStr))
             {
                 conn.Open();
-                using (var cmd = new System.Data.SQLite.SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT slot_index, flag_value FROM character_invisible_falgs WHERE character_id=@cid", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", cid);

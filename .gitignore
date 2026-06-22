@@ -1,0 +1,39 @@
+# Build output (never commit local builds)
+[Bb]in/
+[Oo]bj/
+[Dd]ist/
+[Pp]ublish/
+out/
+
+# Self-contained publish / dev logs
+server.log
+packet_log.txt
+*.log
+
+# IDE / editor (may contain absolute paths)
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.DotSettings.user
+
+# MSBuild / NuGet intermediates (contain machine-specific paths)
+project.lock.json
+project.fragment.lock.json
+artifacts/
+*.nuget.props
+*.nuget.targets
+
+# OS
+.DS_Store
+Thumbs.db
+
+# User-provided game data (large; copy locally per README)
+**/Data/Pvf/Script.pvf
+**/Data/Pvf/*.pvf
+
+# Keep empty Pvf folder marker
+!**/Data/Pvf/README.md

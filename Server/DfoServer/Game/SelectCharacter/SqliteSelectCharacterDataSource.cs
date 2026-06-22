@@ -4,6 +4,7 @@ using DfoServer.Game.Inventory;
 using DfoServer.Game.Settings;
 using System;
 using System.Collections.Generic;
+using Microsoft.Data.Sqlite;
 
 namespace DfoServer.Game.SelectCharacter
 {
@@ -177,12 +178,12 @@ namespace DfoServer.Game.SelectCharacter
 
         private byte[] LoadInitBody(int characterId, int notiType, int occurrenceIndex)
         {
-            using (var conn = new System.Data.SQLite.SQLiteConnection(
+            using (var conn = new SqliteConnection(
                 Infrastructure.SqliteDatabaseBootstrap.Initialize(
                     Infrastructure.ServerPaths.DatabasePath, Infrastructure.ServerPaths.SchemaFilePath)))
             {
                 conn.Open();
-                using (var cmd = new System.Data.SQLite.SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT body FROM character_init_bodies WHERE character_id=@cid AND noti_type=@nt AND occurrence_index=@oi", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -220,7 +221,7 @@ namespace DfoServer.Game.SelectCharacter
         {
             var connStr = Infrastructure.SqliteDatabaseBootstrap.Initialize(
                 Infrastructure.ServerPaths.DatabasePath, Infrastructure.ServerPaths.SchemaFilePath);
-            using (var conn = new System.Data.SQLite.SQLiteConnection(connStr))
+            using (var conn = new SqliteConnection(connStr))
             {
                 conn.Open();
 
@@ -228,7 +229,7 @@ namespace DfoServer.Game.SelectCharacter
                 
                 
                 var stat = Game.Characters.CharacterStatComputer.BuildAdditionalInfo(job, 1);
-                using (var cmd = new System.Data.SQLite.SQLiteCommand(@"INSERT OR IGNORE INTO character_subtype1_fields(
+                using (var cmd = new SqliteCommand(@"INSERT OR IGNORE INTO character_subtype1_fields(
                     character_id, stat_hp_max, stat_mp_max, stat_physical_attack, stat_physical_defense,
                     stat_magical_attack, stat_magical_defense, stat_fire_resistance, stat_water_resistance,
                     stat_dark_resistance, stat_light_resistance, stat_inventory_limit,
@@ -280,7 +281,7 @@ namespace DfoServer.Game.SelectCharacter
                 };
                 foreach (var d in defaults)
                 {
-                    using (var cmd = new System.Data.SQLite.SQLiteCommand(
+                    using (var cmd = new SqliteCommand(
                         "INSERT OR IGNORE INTO character_init_bodies(character_id, noti_type, occurrence_index, body) VALUES(@cid, @nt, 0, @b)", conn))
                     {
                         cmd.Parameters.AddWithValue("@cid", characterId);
@@ -290,7 +291,7 @@ namespace DfoServer.Game.SelectCharacter
                     }
                 }
                 
-                using (var cmd = new System.Data.SQLite.SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "INSERT OR IGNORE INTO character_init_bodies(character_id, noti_type, occurrence_index, body) VALUES(@cid, @nt, 1, @b)", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);

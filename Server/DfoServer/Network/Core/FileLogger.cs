@@ -11,7 +11,7 @@ namespace DfoServer
 
         static FileLogger()
         {
-            var dir = AppDomain.CurrentDomain.BaseDirectory;
+            var dir = AppContext.BaseDirectory;
             _logPath = Path.Combine(dir, "server.log");
             File.WriteAllText(_logPath, $"=== DfoServer started {DateTime.Now:yyyy-MM-dd HH:mm:ss} ===\r\n");
         }

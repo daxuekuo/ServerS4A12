@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 
 namespace DfoServer.Sqlite
 {
@@ -9,7 +9,7 @@ namespace DfoServer.Sqlite
     
     internal static class SqliteSchemaMigrator
     {
-        public static void EnsureColumns(SQLiteConnection connection, string tableName, IEnumerable<(string Name, string Definition)> requiredColumns)
+        public static void EnsureColumns(SqliteConnection connection, string tableName, IEnumerable<(string Name, string Definition)> requiredColumns)
         {
             if (connection == null) throw new ArgumentNullException(nameof(connection));
             if (string.IsNullOrWhiteSpace(tableName)) throw new ArgumentException("tableName is empty", nameof(tableName));
@@ -31,7 +31,7 @@ namespace DfoServer.Sqlite
             }
         }
 
-        public static void MigrateCharacterItemsUniqueConstraint(SQLiteConnection connection)
+        public static void MigrateCharacterItemsUniqueConstraint(SqliteConnection connection)
         {
             if (connection == null) return;
 
@@ -78,7 +78,7 @@ CREATE INDEX IF NOT EXISTS idx_character_items_character
             }
         }
 
-        private static string ReadTableCreateSql(SQLiteConnection connection, string tableName)
+        private static string ReadTableCreateSql(SqliteConnection connection, string tableName)
         {
             using (var cmd = connection.CreateCommand())
             {
@@ -89,7 +89,7 @@ CREATE INDEX IF NOT EXISTS idx_character_items_character
             }
         }
 
-        private static HashSet<string> ReadColumnNames(SQLiteConnection connection, string tableName)
+        private static HashSet<string> ReadColumnNames(SqliteConnection connection, string tableName)
         {
             var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             using (var cmd = connection.CreateCommand())

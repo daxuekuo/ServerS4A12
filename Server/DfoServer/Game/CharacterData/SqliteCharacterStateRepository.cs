@@ -2,7 +2,7 @@ using DfoServer.Game.SelectCharacter;
 using DfoServer.Infrastructure;
 using System;
 using System.Collections.Generic;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 
 namespace DfoServer.Game.CharacterData
 {
@@ -19,10 +19,10 @@ namespace DfoServer.Game.CharacterData
 
         public void LoadFlags(int characterId, SelectCharacterInitializationSnapshot snapshot)
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     @"SELECT shop_coin_event_flag, level60_ui_state, pc_room_state, expert_job_blob, champion_break_blob,
                              boss_tower_placeholder, mailbox_loaded_count, mailbox_mode, mailbox_not_loaded_count, mailbox_unknown_count_c,
                              event_info_tail_byte, hotkey_key_type,
@@ -93,7 +93,7 @@ namespace DfoServer.Game.CharacterData
                 }
 
                 snapshot.GrowthWeaponStageIds.Clear();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT stage_id FROM character_growth_weapon_stages WHERE character_id = @cid ORDER BY sort_order", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -105,7 +105,7 @@ namespace DfoServer.Game.CharacterData
                 }
 
                 snapshot.ShowEffects.Clear();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT effect_index, duration_seconds FROM character_show_effects WHERE character_id = @cid ORDER BY sort_order", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -123,7 +123,7 @@ namespace DfoServer.Game.CharacterData
                 }
 
                 snapshot.PvpMissions.Clear();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT mission_id, progress_value FROM character_pvp_missions WHERE character_id = @cid ORDER BY sort_order", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -141,7 +141,7 @@ namespace DfoServer.Game.CharacterData
                 }
 
                 snapshot.DungeonPermissions.Clear();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT dungeon_id, clear_state FROM character_dungeon_permissions WHERE character_id = @cid ORDER BY sort_order", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -159,7 +159,7 @@ namespace DfoServer.Game.CharacterData
                 }
 
                 snapshot.EventInfoEntries.Clear();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT repeat_event_index, event_data FROM character_event_info WHERE character_id = @cid ORDER BY sort_order", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -182,7 +182,7 @@ namespace DfoServer.Game.CharacterData
                 }
 
                 snapshot.HotkeyConfigSlots.Clear();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT hotkey_value FROM character_hotkey_slots WHERE character_id = @cid ORDER BY slot_index", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -194,7 +194,7 @@ namespace DfoServer.Game.CharacterData
                 }
 
                 snapshot.CharacInvisibleFalgs.Clear();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT slot_index, flag_value FROM character_invisible_falgs WHERE character_id = @cid ORDER BY slot_index", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -213,7 +213,7 @@ namespace DfoServer.Game.CharacterData
 
                 snapshot.RacingDungeonGroups.Clear();
                 var racingGroupsByIndex = new Dictionary<int, RacingDungeonGroupSnapshot>();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT group_index, group_id FROM character_racing_dungeon_groups WHERE character_id = @cid ORDER BY group_index", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -228,7 +228,7 @@ namespace DfoServer.Game.CharacterData
                         }
                     }
                 }
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT group_index, entry_index, track_like_id, value_a, value_b FROM character_racing_dungeon_entries WHERE character_id = @cid ORDER BY group_index, entry_index", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -250,7 +250,7 @@ namespace DfoServer.Game.CharacterData
                 }
 
                 snapshot.RacingDungeonTailIds.Clear();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT id_value FROM character_racing_dungeon_tail_ids WHERE character_id = @cid ORDER BY sort_order", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -265,12 +265,12 @@ namespace DfoServer.Game.CharacterData
 
         public void SaveFlags(int characterId, SelectCharacterInitializationSnapshot snapshot)
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
                 using (var tx = conn.BeginTransaction())
                 {
-                    using (var cmd = new SQLiteCommand(
+                    using (var cmd = new SqliteCommand(
                         @"INSERT OR REPLACE INTO character_init_flags
                           (character_id, shop_coin_event_flag, level60_ui_state, pc_room_state, expert_job_blob, champion_break_blob,
                            boss_tower_placeholder, mailbox_loaded_count, mailbox_mode, mailbox_not_loaded_count, mailbox_unknown_count_c,
@@ -326,7 +326,7 @@ namespace DfoServer.Game.CharacterData
                         cmd.ExecuteNonQuery();
                     }
 
-                    using (var cmd = new SQLiteCommand("DELETE FROM character_growth_weapon_stages WHERE character_id = @cid", conn, tx))
+                    using (var cmd = new SqliteCommand("DELETE FROM character_growth_weapon_stages WHERE character_id = @cid", conn, tx))
                     {
                         cmd.Parameters.AddWithValue("@cid", characterId);
                         cmd.ExecuteNonQuery();
@@ -335,7 +335,7 @@ namespace DfoServer.Game.CharacterData
                     var stages = snapshot.GrowthWeaponStageIds;
                     for (int i = 0; i < stages.Count; i++)
                     {
-                        using (var cmd = new SQLiteCommand(
+                        using (var cmd = new SqliteCommand(
                             "INSERT INTO character_growth_weapon_stages (character_id, sort_order, stage_id) VALUES (@cid, @ord, @sid)", conn, tx))
                         {
                             cmd.Parameters.AddWithValue("@cid", characterId);
@@ -345,7 +345,7 @@ namespace DfoServer.Game.CharacterData
                         }
                     }
 
-                    using (var cmd = new SQLiteCommand("DELETE FROM character_show_effects WHERE character_id = @cid", conn, tx))
+                    using (var cmd = new SqliteCommand("DELETE FROM character_show_effects WHERE character_id = @cid", conn, tx))
                     {
                         cmd.Parameters.AddWithValue("@cid", characterId);
                         cmd.ExecuteNonQuery();
@@ -354,7 +354,7 @@ namespace DfoServer.Game.CharacterData
                     var effects = snapshot.ShowEffects;
                     for (int i = 0; i < effects.Count; i++)
                     {
-                        using (var cmd = new SQLiteCommand(
+                        using (var cmd = new SqliteCommand(
                             "INSERT INTO character_show_effects (character_id, sort_order, effect_index, duration_seconds) VALUES (@cid, @ord, @ei, @ds)", conn, tx))
                         {
                             cmd.Parameters.AddWithValue("@cid", characterId);
@@ -365,7 +365,7 @@ namespace DfoServer.Game.CharacterData
                         }
                     }
 
-                    using (var cmd = new SQLiteCommand("DELETE FROM character_pvp_missions WHERE character_id = @cid", conn, tx))
+                    using (var cmd = new SqliteCommand("DELETE FROM character_pvp_missions WHERE character_id = @cid", conn, tx))
                     {
                         cmd.Parameters.AddWithValue("@cid", characterId);
                         cmd.ExecuteNonQuery();
@@ -374,7 +374,7 @@ namespace DfoServer.Game.CharacterData
                     var missions = snapshot.PvpMissions;
                     for (int i = 0; i < missions.Count; i++)
                     {
-                        using (var cmd = new SQLiteCommand(
+                        using (var cmd = new SqliteCommand(
                             "INSERT INTO character_pvp_missions (character_id, sort_order, mission_id, progress_value) VALUES (@cid, @ord, @mid, @pv)", conn, tx))
                         {
                             cmd.Parameters.AddWithValue("@cid", characterId);
@@ -385,7 +385,7 @@ namespace DfoServer.Game.CharacterData
                         }
                     }
 
-                    using (var cmd = new SQLiteCommand("DELETE FROM character_dungeon_permissions WHERE character_id = @cid", conn, tx))
+                    using (var cmd = new SqliteCommand("DELETE FROM character_dungeon_permissions WHERE character_id = @cid", conn, tx))
                     {
                         cmd.Parameters.AddWithValue("@cid", characterId);
                         cmd.ExecuteNonQuery();
@@ -394,7 +394,7 @@ namespace DfoServer.Game.CharacterData
                     var dungeons = snapshot.DungeonPermissions;
                     for (int i = 0; i < dungeons.Count; i++)
                     {
-                        using (var cmd = new SQLiteCommand(
+                        using (var cmd = new SqliteCommand(
                             "INSERT INTO character_dungeon_permissions (character_id, sort_order, dungeon_id, clear_state) VALUES (@cid, @ord, @did, @cs)", conn, tx))
                         {
                             cmd.Parameters.AddWithValue("@cid", characterId);
@@ -405,7 +405,7 @@ namespace DfoServer.Game.CharacterData
                         }
                     }
 
-                    using (var cmd = new SQLiteCommand("DELETE FROM character_event_info WHERE character_id = @cid", conn, tx))
+                    using (var cmd = new SqliteCommand("DELETE FROM character_event_info WHERE character_id = @cid", conn, tx))
                     {
                         cmd.Parameters.AddWithValue("@cid", characterId);
                         cmd.ExecuteNonQuery();
@@ -414,7 +414,7 @@ namespace DfoServer.Game.CharacterData
                     var events = snapshot.EventInfoEntries;
                     for (int i = 0; i < events.Count; i++)
                     {
-                        using (var cmd = new SQLiteCommand(
+                        using (var cmd = new SqliteCommand(
                             "INSERT INTO character_event_info (character_id, sort_order, repeat_event_index, event_data) VALUES (@cid, @ord, @rei, @ed)", conn, tx))
                         {
                             cmd.Parameters.AddWithValue("@cid", characterId);
@@ -425,7 +425,7 @@ namespace DfoServer.Game.CharacterData
                         }
                     }
 
-                    using (var cmd = new SQLiteCommand("DELETE FROM character_hotkey_slots WHERE character_id = @cid", conn, tx))
+                    using (var cmd = new SqliteCommand("DELETE FROM character_hotkey_slots WHERE character_id = @cid", conn, tx))
                     {
                         cmd.Parameters.AddWithValue("@cid", characterId);
                         cmd.ExecuteNonQuery();
@@ -434,7 +434,7 @@ namespace DfoServer.Game.CharacterData
                     var slots = snapshot.HotkeyConfigSlots;
                     for (int i = 0; i < slots.Count; i++)
                     {
-                        using (var cmd = new SQLiteCommand(
+                        using (var cmd = new SqliteCommand(
                             "INSERT INTO character_hotkey_slots (character_id, slot_index, hotkey_value) VALUES (@cid, @si, @hv)", conn, tx))
                         {
                             cmd.Parameters.AddWithValue("@cid", characterId);
@@ -444,14 +444,14 @@ namespace DfoServer.Game.CharacterData
                         }
                     }
 
-                    using (var cmd = new SQLiteCommand("DELETE FROM character_invisible_falgs WHERE character_id = @cid", conn, tx))
+                    using (var cmd = new SqliteCommand("DELETE FROM character_invisible_falgs WHERE character_id = @cid", conn, tx))
                     {
                         cmd.Parameters.AddWithValue("@cid", characterId);
                         cmd.ExecuteNonQuery();
                     }
                     foreach (var entry in snapshot.CharacInvisibleFalgs)
                     {
-                        using (var cmd = new SQLiteCommand(
+                        using (var cmd = new SqliteCommand(
                             "INSERT INTO character_invisible_falgs (character_id, slot_index, flag_value) VALUES (@cid, @si, @fv)", conn, tx))
                         {
                             cmd.Parameters.AddWithValue("@cid", characterId);
@@ -460,17 +460,17 @@ namespace DfoServer.Game.CharacterData
                             cmd.ExecuteNonQuery();
                         }
                     }
-                    using (var cmd = new SQLiteCommand("DELETE FROM character_racing_dungeon_groups WHERE character_id = @cid", conn, tx))
+                    using (var cmd = new SqliteCommand("DELETE FROM character_racing_dungeon_groups WHERE character_id = @cid", conn, tx))
                     {
                         cmd.Parameters.AddWithValue("@cid", characterId);
                         cmd.ExecuteNonQuery();
                     }
-                    using (var cmd = new SQLiteCommand("DELETE FROM character_racing_dungeon_entries WHERE character_id = @cid", conn, tx))
+                    using (var cmd = new SqliteCommand("DELETE FROM character_racing_dungeon_entries WHERE character_id = @cid", conn, tx))
                     {
                         cmd.Parameters.AddWithValue("@cid", characterId);
                         cmd.ExecuteNonQuery();
                     }
-                    using (var cmd = new SQLiteCommand("DELETE FROM character_racing_dungeon_tail_ids WHERE character_id = @cid", conn, tx))
+                    using (var cmd = new SqliteCommand("DELETE FROM character_racing_dungeon_tail_ids WHERE character_id = @cid", conn, tx))
                     {
                         cmd.Parameters.AddWithValue("@cid", characterId);
                         cmd.ExecuteNonQuery();
@@ -479,7 +479,7 @@ namespace DfoServer.Game.CharacterData
                     var racingGroups = snapshot.RacingDungeonGroups;
                     for (int i = 0; i < racingGroups.Count; i++)
                     {
-                        using (var cmd = new SQLiteCommand(
+                        using (var cmd = new SqliteCommand(
                             "INSERT INTO character_racing_dungeon_groups (character_id, group_index, group_id) VALUES (@cid, @gi, @gid)", conn, tx))
                         {
                             cmd.Parameters.AddWithValue("@cid", characterId);
@@ -490,7 +490,7 @@ namespace DfoServer.Game.CharacterData
                         var entries = racingGroups[i].Entries;
                         for (int j = 0; j < entries.Count; j++)
                         {
-                            using (var cmd = new SQLiteCommand(
+                            using (var cmd = new SqliteCommand(
                                 "INSERT INTO character_racing_dungeon_entries (character_id, group_index, entry_index, track_like_id, value_a, value_b) VALUES (@cid, @gi, @ei, @tid, @va, @vb)", conn, tx))
                             {
                                 cmd.Parameters.AddWithValue("@cid", characterId);
@@ -507,7 +507,7 @@ namespace DfoServer.Game.CharacterData
                     var tailIds = snapshot.RacingDungeonTailIds;
                     for (int i = 0; i < tailIds.Count; i++)
                     {
-                        using (var cmd = new SQLiteCommand(
+                        using (var cmd = new SqliteCommand(
                             "INSERT INTO character_racing_dungeon_tail_ids (character_id, sort_order, id_value) VALUES (@cid, @ord, @v)", conn, tx))
                         {
                             cmd.Parameters.AddWithValue("@cid", characterId);
@@ -524,10 +524,10 @@ namespace DfoServer.Game.CharacterData
 
         public bool HasFlags(int characterId)
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand("SELECT COUNT(*) FROM character_init_flags WHERE character_id = @cid", conn))
+                using (var cmd = new SqliteCommand("SELECT COUNT(*) FROM character_init_flags WHERE character_id = @cid", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
                     return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
@@ -540,10 +540,10 @@ namespace DfoServer.Game.CharacterData
         public List<ItemValueEntrySnapshot> LoadItemValueList(int characterId, string listKind)
         {
             var items = new List<ItemValueEntrySnapshot>();
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT item_id, value FROM character_item_values WHERE character_id = @cid AND list_kind = @kind ORDER BY sort_order", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -560,12 +560,12 @@ namespace DfoServer.Game.CharacterData
 
         public void SaveItemValueList(int characterId, string listKind, List<ItemValueEntrySnapshot> items)
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
                 using (var tx = conn.BeginTransaction())
                 {
-                    using (var cmd = new SQLiteCommand("DELETE FROM character_item_values WHERE character_id = @cid AND list_kind = @kind", conn, tx))
+                    using (var cmd = new SqliteCommand("DELETE FROM character_item_values WHERE character_id = @cid AND list_kind = @kind", conn, tx))
                     {
                         cmd.Parameters.AddWithValue("@cid", characterId);
                         cmd.Parameters.AddWithValue("@kind", listKind);
@@ -573,7 +573,7 @@ namespace DfoServer.Game.CharacterData
                     }
                     for (int i = 0; i < items.Count; i++)
                     {
-                        using (var cmd = new SQLiteCommand(
+                        using (var cmd = new SqliteCommand(
                             "INSERT INTO character_item_values (character_id, list_kind, sort_order, item_id, value) VALUES (@cid, @kind, @ord, @iid, @val)", conn, tx))
                         {
                             cmd.Parameters.AddWithValue("@cid", characterId);
@@ -594,10 +594,10 @@ namespace DfoServer.Game.CharacterData
         public ItemLockListSnapshot LoadItemLocks(int characterId)
         {
             var snapshot = new ItemLockListSnapshot();
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT type_or_list, item_key_or_slot, state, extra_value FROM character_item_locks WHERE character_id = @cid ORDER BY sort_order", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -626,12 +626,12 @@ namespace DfoServer.Game.CharacterData
 
         public void SaveItemLocks(int characterId, ItemLockListSnapshot snapshot)
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
                 using (var tx = conn.BeginTransaction())
                 {
-                    using (var cmd = new SQLiteCommand("DELETE FROM character_item_locks WHERE character_id = @cid", conn, tx))
+                    using (var cmd = new SqliteCommand("DELETE FROM character_item_locks WHERE character_id = @cid", conn, tx))
                     {
                         cmd.Parameters.AddWithValue("@cid", characterId);
                         cmd.ExecuteNonQuery();
@@ -639,7 +639,7 @@ namespace DfoServer.Game.CharacterData
                     for (int i = 0; i < snapshot.Entries.Count; i++)
                     {
                         var e = snapshot.Entries[i];
-                        using (var cmd = new SQLiteCommand(
+                        using (var cmd = new SqliteCommand(
                             "INSERT INTO character_item_locks (character_id, sort_order, type_or_list, item_key_or_slot, state, extra_value) VALUES (@cid, @ord, @t, @k, @s, @ev)", conn, tx))
                         {
                             cmd.Parameters.AddWithValue("@cid", characterId);
@@ -661,10 +661,10 @@ namespace DfoServer.Game.CharacterData
         public AchievementCompleteSnapshot LoadAchievementComplete(int characterId)
         {
             var snapshot = new AchievementCompleteSnapshot();
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT achievement_id, p1, p2, p3, p4 FROM character_achievement_complete WHERE character_id = @cid ORDER BY sort_order", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -689,12 +689,12 @@ namespace DfoServer.Game.CharacterData
 
         public void SaveAchievementComplete(int characterId, AchievementCompleteSnapshot snapshot)
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
                 using (var tx = conn.BeginTransaction())
                 {
-                    using (var cmd = new SQLiteCommand("DELETE FROM character_achievement_complete WHERE character_id = @cid", conn, tx))
+                    using (var cmd = new SqliteCommand("DELETE FROM character_achievement_complete WHERE character_id = @cid", conn, tx))
                     {
                         cmd.Parameters.AddWithValue("@cid", characterId);
                         cmd.ExecuteNonQuery();
@@ -702,7 +702,7 @@ namespace DfoServer.Game.CharacterData
                     for (int i = 0; i < snapshot.Entries.Count; i++)
                     {
                         var e = snapshot.Entries[i];
-                        using (var cmd = new SQLiteCommand(
+                        using (var cmd = new SqliteCommand(
                             "INSERT INTO character_achievement_complete (character_id, sort_order, achievement_id, p1, p2, p3, p4) VALUES (@cid, @ord, @aid, @p1, @p2, @p3, @p4)", conn, tx))
                         {
                             cmd.Parameters.AddWithValue("@cid", characterId);
@@ -725,10 +725,10 @@ namespace DfoServer.Game.CharacterData
         public List<AchievementListChunkSnapshot> LoadAchievementChunks(int characterId)
         {
             var chunks = new List<AchievementListChunkSnapshot>();
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT chunk_index, mode_byte, owner_id16, entries_blob FROM character_achievement_chunks WHERE character_id = @cid ORDER BY chunk_index", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -755,19 +755,19 @@ namespace DfoServer.Game.CharacterData
 
         public void SaveAchievementChunks(int characterId, List<AchievementListChunkSnapshot> chunks)
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
                 using (var tx = conn.BeginTransaction())
                 {
-                    using (var cmd = new SQLiteCommand("DELETE FROM character_achievement_chunks WHERE character_id = @cid", conn, tx))
+                    using (var cmd = new SqliteCommand("DELETE FROM character_achievement_chunks WHERE character_id = @cid", conn, tx))
                     {
                         cmd.Parameters.AddWithValue("@cid", characterId);
                         cmd.ExecuteNonQuery();
                     }
                     foreach (var chunk in chunks)
                     {
-                        using (var cmd = new SQLiteCommand(
+                        using (var cmd = new SqliteCommand(
                             "INSERT INTO character_achievement_chunks (character_id, chunk_index, mode_byte, owner_id16, entries_blob) VALUES (@cid, @ci, @mb, @oid, @eb)", conn, tx))
                         {
                             cmd.Parameters.AddWithValue("@cid", characterId);
@@ -788,10 +788,10 @@ namespace DfoServer.Game.CharacterData
         public List<Unknown725Snapshot> LoadUnknown725(int characterId)
         {
             var list = new List<Unknown725Snapshot>();
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT param_a, mode_or_state, content_id, param_b FROM character_unknown725 WHERE character_id = @cid ORDER BY sort_order", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -813,12 +813,12 @@ namespace DfoServer.Game.CharacterData
 
         public void SaveUnknown725(int characterId, List<Unknown725Snapshot> packets)
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
                 using (var tx = conn.BeginTransaction())
                 {
-                    using (var cmd = new SQLiteCommand("DELETE FROM character_unknown725 WHERE character_id = @cid", conn, tx))
+                    using (var cmd = new SqliteCommand("DELETE FROM character_unknown725 WHERE character_id = @cid", conn, tx))
                     {
                         cmd.Parameters.AddWithValue("@cid", characterId);
                         cmd.ExecuteNonQuery();
@@ -826,7 +826,7 @@ namespace DfoServer.Game.CharacterData
                     for (int i = 0; i < packets.Count; i++)
                     {
                         var p = packets[i];
-                        using (var cmd = new SQLiteCommand(
+                        using (var cmd = new SqliteCommand(
                             "INSERT INTO character_unknown725 (character_id, sort_order, param_a, mode_or_state, content_id, param_b) VALUES (@cid, @ord, @pa, @ms, @ci, @pb)", conn, tx))
                         {
                             cmd.Parameters.AddWithValue("@cid", characterId);
@@ -848,10 +848,10 @@ namespace DfoServer.Game.CharacterData
         public Unknown730Snapshot LoadUnknown730(int characterId)
         {
             var snapshot = new Unknown730Snapshot();
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT entry_id, sentinel_or_value, flag FROM character_unknown730 WHERE character_id = @cid ORDER BY sort_order", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -872,12 +872,12 @@ namespace DfoServer.Game.CharacterData
 
         public void SaveUnknown730(int characterId, Unknown730Snapshot snapshot)
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
                 using (var tx = conn.BeginTransaction())
                 {
-                    using (var cmd = new SQLiteCommand("DELETE FROM character_unknown730 WHERE character_id = @cid", conn, tx))
+                    using (var cmd = new SqliteCommand("DELETE FROM character_unknown730 WHERE character_id = @cid", conn, tx))
                     {
                         cmd.Parameters.AddWithValue("@cid", characterId);
                         cmd.ExecuteNonQuery();
@@ -885,7 +885,7 @@ namespace DfoServer.Game.CharacterData
                     for (int i = 0; i < snapshot.Entries.Count; i++)
                     {
                         var e = snapshot.Entries[i];
-                        using (var cmd = new SQLiteCommand(
+                        using (var cmd = new SqliteCommand(
                             "INSERT INTO character_unknown730 (character_id, sort_order, entry_id, sentinel_or_value, flag) VALUES (@cid, @ord, @eid, @sv, @f)", conn, tx))
                         {
                             cmd.Parameters.AddWithValue("@cid", characterId);
@@ -1094,10 +1094,10 @@ namespace DfoServer.Game.CharacterData
 
         public byte[] LoadGlobalRawPacket(int notiType)
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand("SELECT packet_body FROM global_raw_packets WHERE noti_type = @nt", conn))
+                using (var cmd = new SqliteCommand("SELECT packet_body FROM global_raw_packets WHERE noti_type = @nt", conn))
                 {
                     cmd.Parameters.AddWithValue("@nt", notiType);
                     var result = cmd.ExecuteScalar();
@@ -1108,10 +1108,10 @@ namespace DfoServer.Game.CharacterData
 
         public byte[] LoadServerEventPhaseBitmap()
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand("SELECT event_phase_bitmap FROM global_server_event_phase WHERE id = 1", conn))
+                using (var cmd = new SqliteCommand("SELECT event_phase_bitmap FROM global_server_event_phase WHERE id = 1", conn))
                 {
                     var result = cmd.ExecuteScalar();
                     return result == null || result == DBNull.Value ? null : (byte[])result;
@@ -1121,11 +1121,11 @@ namespace DfoServer.Game.CharacterData
 
         public void SeedRawPacketsFromTemplates(int characterId, List<SelectCharacterPacketTemplate> templates)
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
 
-                using (var chk = new SQLiteCommand("SELECT COUNT(*) FROM character_init_bodies WHERE character_id = @cid", conn))
+                using (var chk = new SqliteCommand("SELECT COUNT(*) FROM character_init_bodies WHERE character_id = @cid", conn))
                 {
                     chk.Parameters.AddWithValue("@cid", characterId);
                     if (Convert.ToInt32(chk.ExecuteScalar()) > 0)
@@ -1152,7 +1152,7 @@ namespace DfoServer.Game.CharacterData
                                 continue;
                             var bitmap = new byte[body.Length - 4];
                             Buffer.BlockCopy(body, 4, bitmap, 0, bitmap.Length);
-                            using (var cmd = new SQLiteCommand("INSERT OR IGNORE INTO global_server_event_phase (id, event_phase_bitmap) VALUES (1, @b)", conn, tx))
+                            using (var cmd = new SqliteCommand("INSERT OR IGNORE INTO global_server_event_phase (id, event_phase_bitmap) VALUES (1, @b)", conn, tx))
                             {
                                 cmd.Parameters.AddWithValue("@b", bitmap);
                                 cmd.ExecuteNonQuery();
@@ -1160,7 +1160,7 @@ namespace DfoServer.Game.CharacterData
                         }
                         else if (t.Command == 0x01 && t.Type == 0x0312)
                         {
-                            using (var cmd = new SQLiteCommand("INSERT OR IGNORE INTO global_raw_packets (noti_type, packet_body) VALUES (@nt, @body)", conn, tx))
+                            using (var cmd = new SqliteCommand("INSERT OR IGNORE INTO global_raw_packets (noti_type, packet_body) VALUES (@nt, @body)", conn, tx))
                             {
                                 cmd.Parameters.AddWithValue("@nt", 0x10312);
                                 cmd.Parameters.AddWithValue("@body", body);
@@ -1179,7 +1179,7 @@ namespace DfoServer.Game.CharacterData
                             continue;
                         var b = new byte[t.PacketBytes.Length - hdrLen];
                         Buffer.BlockCopy(t.PacketBytes, hdrLen, b, 0, b.Length);
-                        using (var cmd = new SQLiteCommand(
+                        using (var cmd = new SqliteCommand(
                             "INSERT OR IGNORE INTO character_init_bodies(character_id, noti_type, occurrence_index, body) VALUES(@cid, @nt, @oi, @b)", conn, tx))
                         {
                             cmd.Parameters.AddWithValue("@cid", characterId);

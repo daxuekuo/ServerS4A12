@@ -2,7 +2,7 @@ using DfoServer.Game.SelectCharacter;
 using DfoServer.Infrastructure;
 using System;
 using System.Collections.Generic;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 
 namespace DfoServer.Game.CharacterData
 {
@@ -20,12 +20,12 @@ namespace DfoServer.Game.CharacterData
 
         public void SaveUserInfoPackets(int characterId, List<SelectCharacterUserInfoPacketSnapshot> packets)
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
                 using (var tx = conn.BeginTransaction())
                 {
-                    using (var cmd = new SQLiteCommand("DELETE FROM character_userinfo_blobs WHERE character_id = @cid AND blob_kind = 'init'", conn, tx))
+                    using (var cmd = new SqliteCommand("DELETE FROM character_userinfo_blobs WHERE character_id = @cid AND blob_kind = 'init'", conn, tx))
                     {
                         cmd.Parameters.AddWithValue("@cid", characterId);
                         cmd.ExecuteNonQuery();
@@ -33,7 +33,7 @@ namespace DfoServer.Game.CharacterData
                     for (int i = 0; i < packets.Count; i++)
                     {
                         var p = packets[i];
-                        using (var cmd = new SQLiteCommand(
+                        using (var cmd = new SqliteCommand(
                             "INSERT INTO character_userinfo_blobs (character_id, blob_kind, subtype, user_info_type, gate_or_count, user_id, name_bytes, remaining_bytes) VALUES (@cid, 'init', @st, @uit, @goc, @uid, @nb, @rb)", conn, tx))
                         {
                             cmd.Parameters.AddWithValue("@cid", characterId);
@@ -53,10 +53,10 @@ namespace DfoServer.Game.CharacterData
 
         public bool HasUserInfoPackets(int characterId)
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand("SELECT COUNT(*) FROM character_userinfo_blobs WHERE character_id = @cid AND blob_kind = 'init'", conn))
+                using (var cmd = new SqliteCommand("SELECT COUNT(*) FROM character_userinfo_blobs WHERE character_id = @cid AND blob_kind = 'init'", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
                     return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
@@ -66,10 +66,10 @@ namespace DfoServer.Game.CharacterData
 
         public int LoadSeedCharacterId()
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand("SELECT seed_character_id FROM get_userinfo_template WHERE id=1", conn))
+                using (var cmd = new SqliteCommand("SELECT seed_character_id FROM get_userinfo_template WHERE id=1", conn))
                 {
                     var result = cmd.ExecuteScalar();
                     return result != null && result != System.DBNull.Value ? System.Convert.ToInt32(result) : 0;
@@ -79,10 +79,10 @@ namespace DfoServer.Game.CharacterData
 
         public byte[] LoadGetUserInfoResponseBlob()
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand("SELECT response_blob FROM get_userinfo_template WHERE id=1", conn))
+                using (var cmd = new SqliteCommand("SELECT response_blob FROM get_userinfo_template WHERE id=1", conn))
                 {
                     var result = cmd.ExecuteScalar();
                     return result != null && result != System.DBNull.Value ? (byte[])result : null;
@@ -92,19 +92,19 @@ namespace DfoServer.Game.CharacterData
 
         public void SaveGetUserInfoResponseBlob(byte[] blob)
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
                 DfoServer.Sqlite.SqliteSchemaMigrator.EnsureColumns(conn, "get_userinfo_template", new[]
                 {
                     ("response_blob", "BLOB"),
                 });
-                using (var cmd = new SQLiteCommand("UPDATE get_userinfo_template SET response_blob=@b WHERE id=1", conn))
+                using (var cmd = new SqliteCommand("UPDATE get_userinfo_template SET response_blob=@b WHERE id=1", conn))
                 {
                     cmd.Parameters.AddWithValue("@b", blob != null ? (object)blob : System.DBNull.Value);
                     if (cmd.ExecuteNonQuery() == 0)
                     {
-                        using (var ins = new SQLiteCommand("INSERT OR IGNORE INTO get_userinfo_template (id, response_blob) VALUES (1, @b)", conn))
+                        using (var ins = new SqliteCommand("INSERT OR IGNORE INTO get_userinfo_template (id, response_blob) VALUES (1, @b)", conn))
                         {
                             ins.Parameters.AddWithValue("@b", blob != null ? (object)blob : System.DBNull.Value);
                             ins.ExecuteNonQuery();
@@ -122,10 +122,10 @@ namespace DfoServer.Game.CharacterData
 
         public Network.Builders.GetUserInfoTemplate LoadGetUserInfoTemplate()
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand("SELECT pkt0_routing_byte7, gate_or_count1, gate_or_count2, flag_or_manage, key_or_point, unknown16, unknown32, pkt2_result_code, pkt2_character_key, pkt2_slot_flag1, pkt2_slot_flag2, pkt2_state_flag, pkt2_flag3, pkt2_reserved, seed_character_id FROM get_userinfo_template WHERE id=1", conn))
+                using (var cmd = new SqliteCommand("SELECT pkt0_routing_byte7, gate_or_count1, gate_or_count2, flag_or_manage, key_or_point, unknown16, unknown32, pkt2_result_code, pkt2_character_key, pkt2_slot_flag1, pkt2_slot_flag2, pkt2_state_flag, pkt2_flag3, pkt2_reserved, seed_character_id FROM get_userinfo_template WHERE id=1", conn))
                 {
                     using (var r = cmd.ExecuteReader())
                     {
@@ -156,10 +156,10 @@ namespace DfoServer.Game.CharacterData
         public void SaveGetUserInfoTemplate(Network.Builders.GetUserInfoTemplate t)
         {
             if (t == null) return;
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand(@"INSERT OR REPLACE INTO get_userinfo_template
+                using (var cmd = new SqliteCommand(@"INSERT OR REPLACE INTO get_userinfo_template
                     (id, seed_character_id, pkt0_routing_byte7, gate_or_count1, gate_or_count2, flag_or_manage, key_or_point, unknown16, unknown32,
                      pkt2_result_code, pkt2_character_key, pkt2_slot_flag1, pkt2_slot_flag2, pkt2_state_flag, pkt2_flag3, pkt2_reserved)
                     VALUES (1, @sid, @a, @b, @c, @d, @e, @f, @g, @h, @i, @j, @k, @l, @m, @n)", conn))

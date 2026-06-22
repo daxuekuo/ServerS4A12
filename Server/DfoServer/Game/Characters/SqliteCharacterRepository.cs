@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 using System.Globalization;
 using System.IO;
 using DfoServer.Sqlite;
@@ -26,7 +26,7 @@ namespace DfoServer.Game.Characters
 
             _connectionString = SqliteDatabaseBootstrap.Initialize(databasePath, schemaFilePath);
 
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
                 SqliteSchemaMigrator.EnsureColumns(conn, "characters", new[]
@@ -283,9 +283,9 @@ FROM characters";
             return DateTime.MinValue;
         }
 
-        private SQLiteConnection Open()
+        private SqliteConnection Open()
         {
-            var conn = new SQLiteConnection(_connectionString);
+            var conn = new SqliteConnection(_connectionString);
             conn.Open();
             return conn;
         }

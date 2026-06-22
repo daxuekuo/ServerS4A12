@@ -7,6 +7,7 @@ using DfoServer.Network.Parsers.Dungeon;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Data.Sqlite;
 
 namespace DfoServer.Network.Handlers
 {
@@ -845,7 +846,7 @@ namespace DfoServer.Network.Handlers
             {
                 var connStr = Infrastructure.SqliteDatabaseBootstrap.Initialize(
                     Infrastructure.ServerPaths.DatabasePath, Infrastructure.ServerPaths.SchemaFilePath);
-                using (var conn = new System.Data.SQLite.SQLiteConnection(connStr))
+                using (var conn = new SqliteConnection(connStr))
                 {
                     conn.Open();
                     using (var tx = conn.BeginTransaction())
@@ -868,7 +869,7 @@ namespace DfoServer.Network.Handlers
             {
                 var connStr = Infrastructure.SqliteDatabaseBootstrap.Initialize(
                     Infrastructure.ServerPaths.DatabasePath, Infrastructure.ServerPaths.SchemaFilePath);
-                using (var conn = new System.Data.SQLite.SQLiteConnection(connStr))
+                using (var conn = new SqliteConnection(connStr))
                 {
                     conn.Open();
                     var wallet = Game.Inventory.CurrencyService.LoadWallet(conn, null, characterId);

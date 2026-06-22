@@ -2,7 +2,7 @@ using DfoServer.Game.Inventory;
 using DfoServer.Game.SelectCharacter;
 using DfoServer.Infrastructure;
 using System.Collections.Generic;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 
 namespace DfoServer.Game.CharacterData
 {
@@ -18,10 +18,10 @@ namespace DfoServer.Game.CharacterData
         public List<SelectCharacterPacketTemplate> Load(int characterId)
         {
             var list = new List<SelectCharacterPacketTemplate>();
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT command, noti_type, kind, item_list_type, occurrence_index FROM packet_sequence WHERE character_id=@cid ORDER BY seq_index",
                     conn))
                 {
@@ -48,12 +48,12 @@ namespace DfoServer.Game.CharacterData
         public void Save(int characterId, List<SelectCharacterPacketTemplate> templates)
         {
             if (templates == null || templates.Count == 0) return;
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
                 using (var tx = conn.BeginTransaction())
                 {
-                    using (var del = new SQLiteCommand("DELETE FROM packet_sequence WHERE character_id=@cid", conn, tx))
+                    using (var del = new SqliteCommand("DELETE FROM packet_sequence WHERE character_id=@cid", conn, tx))
                     {
                         del.Parameters.AddWithValue("@cid", characterId);
                         del.ExecuteNonQuery();
@@ -61,7 +61,7 @@ namespace DfoServer.Game.CharacterData
                     for (int i = 0; i < templates.Count; i++)
                     {
                         var t = templates[i];
-                        using (var cmd = new SQLiteCommand(
+                        using (var cmd = new SqliteCommand(
                             @"INSERT INTO packet_sequence (character_id, seq_index, command, noti_type, kind, item_list_type, occurrence_index)
                               VALUES (@cid, @idx, @cmd, @nt, @kind, @ilt, @oi)", conn, tx))
                         {
@@ -82,10 +82,10 @@ namespace DfoServer.Game.CharacterData
 
         public bool HasSequence(int characterId)
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand("SELECT COUNT(*) FROM packet_sequence WHERE character_id=@cid", conn))
+                using (var cmd = new SqliteCommand("SELECT COUNT(*) FROM packet_sequence WHERE character_id=@cid", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
                     return System.Convert.ToInt32(cmd.ExecuteScalar()) > 0;
