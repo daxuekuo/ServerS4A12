@@ -219,7 +219,7 @@ namespace DfoServer.Network.Handlers
             }
 
             var job = body[0];
-            if (job > 10 || job == 10)
+            if (job > 12)
             {
                 await session.SendPacketAsync(GamePacketEnvelopeBuilder.Build(0x01, 0x0005, new byte[] { 0x04 }));
                 return;
