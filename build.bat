@@ -9,8 +9,11 @@ if errorlevel 1 goto failed
 
 echo.
 echo Build succeeded.
-echo Output: Server\DfoServer\bin\Debug\DfoServer.exe
-echo You can also double-click StartServer.exe from the repository root.
+echo Dev output: Server\DfoServer\bin\Debug\
+echo   Run: start-server.bat
+echo   Or:  dotnet run --project Server\DfoServer\DfoServer.csproj -c Debug
+echo.
+echo For a self-contained release build: publish.bat
 pause
 exit /b 0
 

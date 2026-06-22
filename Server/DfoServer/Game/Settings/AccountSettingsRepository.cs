@@ -1,5 +1,5 @@
 using System;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 using DfoServer.Infrastructure;
 
 namespace DfoServer.Game.Settings
@@ -15,10 +15,10 @@ namespace DfoServer.Game.Settings
 
         public AccountSettings Load(int accountId)
         {
-            using (var conn = new SQLiteConnection(_connStr))
+            using (var conn = new SqliteConnection(_connStr))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT main_game_option, quickchat_bank0, quickchat_bank1, hotkey_key_type, hotkey_slots FROM account_settings WHERE account_id=@aid", conn))
                 {
                     cmd.Parameters.AddWithValue("@aid", accountId);
@@ -56,10 +56,10 @@ namespace DfoServer.Game.Settings
 
         private void Upsert(int accountId, string column, byte[] blob)
         {
-            using (var conn = new SQLiteConnection(_connStr))
+            using (var conn = new SqliteConnection(_connStr))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand(conn))
+                using (var cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = $@"
                         INSERT INTO account_settings (account_id, {column})

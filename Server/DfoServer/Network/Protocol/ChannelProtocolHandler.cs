@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
+using DfoServer.Infrastructure;
 
 namespace DfoServer.Network
 {
@@ -17,7 +17,7 @@ namespace DfoServer.Network
 
         public string AesEncryptionKey => DateTime.Now.ToString("yyyyMMdd") + "000006";
 
-        public string EtcFilePath => "channel_info.etc";
+        public string EtcFilePath => ServerPaths.ChannelInfoFilePath;
 
         public string TestServerIP => GameNetworkConfig.ServerIp;
 

@@ -1,5 +1,5 @@
 using System;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 using DfoServer.Game.Inventory;
 
 namespace DfoServer.Game.CharacterData
@@ -32,10 +32,10 @@ namespace DfoServer.Game.CharacterData
     
     public static class Subtype1BlobMigrator
     {
-        public static void Migrate(SQLiteConnection conn, int characterId)
+        public static void Migrate(SqliteConnection conn, int characterId)
         {
             byte[] blob;
-            using (var cmd = new SQLiteCommand("SELECT equip_list_blob FROM equipped_items WHERE character_id=@cid", conn))
+            using (var cmd = new SqliteCommand("SELECT equip_list_blob FROM equipped_items WHERE character_id=@cid", conn))
             {
                 cmd.Parameters.AddWithValue("@cid", characterId);
                 var result = cmd.ExecuteScalar();
@@ -53,7 +53,7 @@ namespace DfoServer.Game.CharacterData
             byte exEquipSlot = blob[o++];
 
             
-            using (var cmd = new SQLiteCommand("UPDATE characters SET exp=@e, ex_equip_slot_stat=@es WHERE character_id=@cid", conn))
+            using (var cmd = new SqliteCommand("UPDATE characters SET exp=@e, ex_equip_slot_stat=@es WHERE character_id=@cid", conn))
             {
                 cmd.Parameters.AddWithValue("@e", (long)exp);
                 cmd.Parameters.AddWithValue("@es", (int)exEquipSlot);
@@ -65,11 +65,11 @@ namespace DfoServer.Game.CharacterData
             var parsed = MakeEquipListCodec.Parse(blob);
 
             
-            using (var cmd = new SQLiteCommand("DELETE FROM character_equipped_entries WHERE character_id=@cid", conn))
+            using (var cmd = new SqliteCommand("DELETE FROM character_equipped_entries WHERE character_id=@cid", conn))
             { cmd.Parameters.AddWithValue("@cid", characterId); cmd.ExecuteNonQuery(); }
             foreach (var entry in parsed.Entries)
             {
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "INSERT OR REPLACE INTO character_equipped_entries(character_id,slot,item_id,raw_entry) VALUES(@cid,@s,@iid,@raw)", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -106,13 +106,13 @@ namespace DfoServer.Game.CharacterData
             
             int dimCount = blob[o++];
             
-            using (var cmd = new SQLiteCommand("DELETE FROM character_dimensions WHERE character_id=@cid", conn))
+            using (var cmd = new SqliteCommand("DELETE FROM character_dimensions WHERE character_id=@cid", conn))
             { cmd.Parameters.AddWithValue("@cid", characterId); cmd.ExecuteNonQuery(); }
             for (int i = 0; i < dimCount; i++)
             {
                 uint dk = ReadU32(blob, ref o);
                 byte v1 = blob[o++], v2 = blob[o++];
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "INSERT OR REPLACE INTO character_dimensions(character_id,sort_order,dim_key,val1,val2) VALUES(@cid,@so,@dk,@v1,@v2)", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -124,7 +124,7 @@ namespace DfoServer.Game.CharacterData
                 }
             }
             byte df1 = blob[o++], df2 = blob[o++], df3 = blob[o++], df4 = blob[o++];
-            using (var cmd = new SQLiteCommand(
+            using (var cmd = new SqliteCommand(
                 "INSERT OR REPLACE INTO character_dimension_flags(character_id,flag1,flag2,flag3,flag4) VALUES(@cid,@f1,@f2,@f3,@f4)", conn))
             {
                 cmd.Parameters.AddWithValue("@cid", characterId);
@@ -135,13 +135,13 @@ namespace DfoServer.Game.CharacterData
 
             
             int pvpCount = blob[o++];
-            using (var cmd = new SQLiteCommand("DELETE FROM character_pvp_results WHERE character_id=@cid", conn))
+            using (var cmd = new SqliteCommand("DELETE FROM character_pvp_results WHERE character_id=@cid", conn))
             { cmd.Parameters.AddWithValue("@cid", characterId); cmd.ExecuteNonQuery(); }
             for (int i = 0; i < pvpCount; i++)
             {
                 uint v32 = ReadU32(blob, ref o);
                 ushort v16a = ReadU16(blob, ref o), v16b = ReadU16(blob, ref o);
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "INSERT OR REPLACE INTO character_pvp_results(character_id,sort_order,value_u32,value_u16a,value_u16b) VALUES(@cid,@so,@a,@b,@c)", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId); cmd.Parameters.AddWithValue("@so", i);
@@ -155,12 +155,12 @@ namespace DfoServer.Game.CharacterData
 
             
             uint abuseCount = ReadU32(blob, ref o);
-            using (var cmd = new SQLiteCommand("DELETE FROM character_abuse_values WHERE character_id=@cid", conn))
+            using (var cmd = new SqliteCommand("DELETE FROM character_abuse_values WHERE character_id=@cid", conn))
             { cmd.Parameters.AddWithValue("@cid", characterId); cmd.ExecuteNonQuery(); }
             for (uint i = 0; i < abuseCount; i++)
             {
                 uint av = ReadU32(blob, ref o);
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "INSERT OR REPLACE INTO character_abuse_values(character_id,sort_order,abuse_value) VALUES(@cid,@so,@v)", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId); cmd.Parameters.AddWithValue("@so", (int)i);
@@ -200,7 +200,7 @@ namespace DfoServer.Game.CharacterData
             ushort hitRecovery = SU16(statBlock, ref so); ushort jumpPower = SU16(statBlock, ref so);
             uint weight = S32(statBlock, ref so, 4);
 
-            using (var cmd = new SQLiteCommand(@"INSERT OR REPLACE INTO character_subtype1_fields(
+            using (var cmd = new SqliteCommand(@"INSERT OR REPLACE INTO character_subtype1_fields(
                 character_id, stat_hp_max, stat_mp_max, stat_physical_attack, stat_physical_defense,
                 stat_magical_attack, stat_magical_defense, stat_fire_resistance, stat_water_resistance,
                 stat_dark_resistance, stat_light_resistance, stat_inventory_limit,

@@ -11,7 +11,7 @@ namespace DfoServer.Network
 
         static PacketFileLogger()
         {
-            var dir = AppDomain.CurrentDomain.BaseDirectory;
+            var dir = AppContext.BaseDirectory;
             _logPath = Path.Combine(dir, "packet_log.txt");
             
             File.WriteAllText(_logPath, $"=== DfoServer packet log started {DateTime.Now:yyyy-MM-dd HH:mm:ss} ===\r\n");

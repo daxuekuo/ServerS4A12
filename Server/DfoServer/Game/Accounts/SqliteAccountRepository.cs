@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 using System.Globalization;
 using System.IO;
 
@@ -102,9 +102,9 @@ namespace DfoServer.Game.Accounts
             return DateTime.MinValue;
         }
 
-        private SQLiteConnection Open()
+        private SqliteConnection Open()
         {
-            var conn = new SQLiteConnection(_connectionString);
+            var conn = new SqliteConnection(_connectionString);
             conn.Open();
             return conn;
         }

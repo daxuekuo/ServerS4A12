@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 
 namespace DfoServer.Game.Quests
 {
@@ -18,13 +18,13 @@ namespace DfoServer.Game.Quests
         public static List<ActiveQuest> LoadActiveQuests(string connStr, int characterId)
         {
             var list = new List<ActiveQuest>();
-            using (var conn = new SQLiteConnection(connStr))
+            using (var conn = new SqliteConnection(connStr))
             {
                 conn.Open();
-                using (var tc = new SQLiteCommand(
+                using (var tc = new SqliteCommand(
                     "CREATE TABLE IF NOT EXISTS character_active_quests (character_id INTEGER NOT NULL, slot INTEGER NOT NULL, quest_id INTEGER NOT NULL, trigger_value INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (character_id, slot))", conn))
                     tc.ExecuteNonQuery();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT slot, quest_id, trigger_value FROM character_active_quests WHERE character_id=@cid ORDER BY slot", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -40,17 +40,17 @@ namespace DfoServer.Game.Quests
 
         public static void SaveActiveQuests(string connStr, int characterId, List<ActiveQuest> quests)
         {
-            using (var conn = new SQLiteConnection(connStr))
+            using (var conn = new SqliteConnection(connStr))
             {
                 conn.Open();
-                using (var tc = new SQLiteCommand(
+                using (var tc = new SqliteCommand(
                     "CREATE TABLE IF NOT EXISTS character_active_quests (character_id INTEGER NOT NULL, slot INTEGER NOT NULL, quest_id INTEGER NOT NULL, trigger_value INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (character_id, slot))", conn))
                     tc.ExecuteNonQuery();
                 using (var tx = conn.BeginTransaction())
                 {
                     foreach (var q in quests)
                     {
-                        using (var cmd = new SQLiteCommand(
+                        using (var cmd = new SqliteCommand(
                             "INSERT OR REPLACE INTO character_active_quests (character_id, slot, quest_id, trigger_value) VALUES (@cid, @s, @qid, @tv)", conn, tx))
                         {
                             cmd.Parameters.AddWithValue("@cid", characterId);
@@ -117,10 +117,10 @@ namespace DfoServer.Game.Quests
 
             uint initTrigger = GameWorld.QuestData.GetInitTrigger(questId);
 
-            using (var conn = new SQLiteConnection(connStr))
+            using (var conn = new SqliteConnection(connStr))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "INSERT OR REPLACE INTO character_active_quests (character_id, slot, quest_id, trigger_value) VALUES (@cid, @s, @qid, @tv)", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -131,7 +131,7 @@ namespace DfoServer.Game.Quests
                 }
                 if (repeatable)
                 {
-                    using (var cmd = new SQLiteCommand(
+                    using (var cmd = new SqliteCommand(
                         "DELETE FROM character_invisible_falgs WHERE character_id=@cid AND slot_index=@idx", conn))
                     {
                         cmd.Parameters.AddWithValue("@cid", characterId);
@@ -168,10 +168,10 @@ namespace DfoServer.Game.Quests
             if (q == null) return BuildFailAck(19);
             if (!GameWorld.QuestData.CanGiveup(questId)) return BuildFailAck(20);
 
-            using (var conn = new SQLiteConnection(connStr))
+            using (var conn = new SqliteConnection(connStr))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "DELETE FROM character_active_quests WHERE character_id=@cid AND slot=@s", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -228,10 +228,10 @@ namespace DfoServer.Game.Quests
             }
 
             q.TriggerValue = newTrigger;
-            using (var conn = new SQLiteConnection(connStr))
+            using (var conn = new SqliteConnection(connStr))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "UPDATE character_active_quests SET trigger_value=@tv WHERE character_id=@cid AND slot=@s", conn))
                 {
                     cmd.Parameters.AddWithValue("@tv", (long)newTrigger);
@@ -293,7 +293,7 @@ namespace DfoServer.Game.Quests
             var consumedEntries = new List<ConsumedItemEntry>();
             var insertedEntries = new List<InsertedItemEntry>();
 
-            using (var conn = new SQLiteConnection(connStr))
+            using (var conn = new SqliteConnection(connStr))
             {
                 conn.Open();
                 using (var tx = conn.BeginTransaction())
@@ -306,7 +306,7 @@ namespace DfoServer.Game.Quests
 
                     if (q != null)
                     {
-                        using (var cmd = new SQLiteCommand(
+                        using (var cmd = new SqliteCommand(
                             "DELETE FROM character_active_quests WHERE character_id=@cid AND slot=@s", conn, tx))
                         {
                             cmd.Parameters.AddWithValue("@cid", characterId);
@@ -361,7 +361,7 @@ namespace DfoServer.Game.Quests
                     }
 
                     if (!GameWorld.QuestData.IsRepeatableQuest(questId))
-                        MarkQuestCleared(conn, characterId, questId);
+                        MarkQuestCleared(conn, tx, characterId, questId);
                     tx.Commit();
                 }
             }
@@ -404,10 +404,10 @@ namespace DfoServer.Game.Quests
             return w.ToArray();
         }
 
-        private static void MarkQuestCleared(SQLiteConnection conn, int characterId, ushort questId)
+        private static void MarkQuestCleared(SqliteConnection conn, SqliteTransaction tx, int characterId, ushort questId)
         {
-            using (var cmd = new SQLiteCommand(
-                "INSERT OR REPLACE INTO character_invisible_falgs (character_id, slot_index, flag_value) VALUES (@cid, @idx, 1)", conn))
+            using (var cmd = new SqliteCommand(
+                "INSERT OR REPLACE INTO character_invisible_falgs (character_id, slot_index, flag_value) VALUES (@cid, @idx, 1)", conn, tx))
             {
                 cmd.Parameters.AddWithValue("@cid", characterId);
                 cmd.Parameters.AddWithValue("@idx", (int)questId);
@@ -415,8 +415,8 @@ namespace DfoServer.Game.Quests
             }
 
             uint requiredLen = (uint)(questId + 1);
-            using (var cmd = new SQLiteCommand(
-                "UPDATE character_init_flags SET charac_invisible_falgs_payload_len = MAX(charac_invisible_falgs_payload_len, @len) WHERE character_id = @cid", conn))
+            using (var cmd = new SqliteCommand(
+                "UPDATE character_init_flags SET charac_invisible_falgs_payload_len = MAX(charac_invisible_falgs_payload_len, @len) WHERE character_id = @cid", conn, tx))
             {
                 cmd.Parameters.AddWithValue("@len", (long)requiredLen);
                 cmd.Parameters.AddWithValue("@cid", characterId);
@@ -426,10 +426,10 @@ namespace DfoServer.Game.Quests
 
         public static bool IsQuestCleared(string connStr, int characterId, ushort questId)
         {
-            using (var conn = new SQLiteConnection(connStr))
+            using (var conn = new SqliteConnection(connStr))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT flag_value FROM character_invisible_falgs WHERE character_id=@cid AND slot_index=@idx", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -440,9 +440,9 @@ namespace DfoServer.Game.Quests
             }
         }
 
-        private static ConsumedItemEntry DeleteItemByTemplateId(SQLiteConnection conn, SQLiteTransaction tx, int characterId, int itemTemplateId, int count)
+        private static ConsumedItemEntry DeleteItemByTemplateId(SqliteConnection conn, SqliteTransaction tx, int characterId, int itemTemplateId, int count)
         {
-            using (var cmd = new SQLiteCommand(
+            using (var cmd = new SqliteCommand(
                 "SELECT slot_index, stack_count FROM character_items WHERE character_id=@cid AND list_type=0 AND item_template_id=@tid LIMIT 1", conn, tx))
             {
                 cmd.Parameters.AddWithValue("@cid", characterId);
@@ -457,7 +457,7 @@ namespace DfoServer.Game.Quests
                     int newStack = stack - count;
                     if (newStack <= 0)
                     {
-                        using (var del = new SQLiteCommand(
+                        using (var del = new SqliteCommand(
                             "DELETE FROM character_items WHERE character_id=@cid AND list_type=0 AND slot_index=@slot", conn, tx))
                         {
                             del.Parameters.AddWithValue("@cid", characterId);
@@ -468,7 +468,7 @@ namespace DfoServer.Game.Quests
                     }
                     else
                     {
-                        using (var upd = new SQLiteCommand(
+                        using (var upd = new SqliteCommand(
                             "UPDATE character_items SET stack_count=@ns WHERE character_id=@cid AND list_type=0 AND slot_index=@slot", conn, tx))
                         {
                             upd.Parameters.AddWithValue("@ns", newStack);
@@ -482,12 +482,12 @@ namespace DfoServer.Game.Quests
             }
         }
 
-        private static bool CheckInventorySpace(SQLiteConnection conn, SQLiteTransaction tx, int characterId, List<GameWorld.QuestRewardItem> items)
+        private static bool CheckInventorySpace(SqliteConnection conn, SqliteTransaction tx, int characterId, List<GameWorld.QuestRewardItem> items)
         {
             if (items == null || items.Count == 0) return true;
 
             var usedSlots = new HashSet<int>();
-            using (var cmd = new SQLiteCommand(
+            using (var cmd = new SqliteCommand(
                 "SELECT slot_index FROM character_items WHERE character_id=@cid AND list_type=0", conn, tx))
             {
                 cmd.Parameters.AddWithValue("@cid", characterId);
@@ -502,7 +502,7 @@ namespace DfoServer.Game.Quests
                 if (meta.IsStackable)
                 {
                     bool exists = false;
-                    using (var cmd = new SQLiteCommand(
+                    using (var cmd = new SqliteCommand(
                         "SELECT 1 FROM character_items WHERE character_id=@cid AND list_type=0 AND item_template_id=@tid LIMIT 1", conn, tx))
                     {
                         cmd.Parameters.AddWithValue("@cid", characterId);
@@ -524,13 +524,13 @@ namespace DfoServer.Game.Quests
             return true;
         }
 
-        private static InsertedItemEntry InsertRewardItem(SQLiteConnection conn, SQLiteTransaction tx, int characterId, int itemTemplateId, int count)
+        private static InsertedItemEntry InsertRewardItem(SqliteConnection conn, SqliteTransaction tx, int characterId, int itemTemplateId, int count)
         {
             var meta = Inventory.ItemMetadataResolver.Resolve(itemTemplateId);
 
             if (meta.IsStackable)
             {
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT slot_index, stack_count FROM character_items WHERE character_id=@cid AND list_type=0 AND item_template_id=@tid LIMIT 1", conn, tx))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -543,7 +543,7 @@ namespace DfoServer.Game.Quests
                             int existStack = r.GetInt32(1);
                             r.Close();
                             int newStack = existStack + count;
-                            using (var upd = new SQLiteCommand(
+                            using (var upd = new SqliteCommand(
                                 "UPDATE character_items SET stack_count=@ns, instance_value=@ns WHERE character_id=@cid AND list_type=0 AND slot_index=@slot", conn, tx))
                             {
                                 upd.Parameters.AddWithValue("@ns", newStack);
@@ -561,7 +561,7 @@ namespace DfoServer.Game.Quests
             meta.GetSlotRange(out slotStart, out slotEnd);
             int slot = -1;
             var usedSlots = new HashSet<int>();
-            using (var cmd = new SQLiteCommand(
+            using (var cmd = new SqliteCommand(
                 "SELECT slot_index FROM character_items WHERE character_id=@cid AND list_type=0 AND slot_index BETWEEN @s AND @e", conn, tx))
             {
                 cmd.Parameters.AddWithValue("@cid", characterId);
@@ -577,7 +577,7 @@ namespace DfoServer.Game.Quests
             if (slot < 0) return null;
 
             int instanceValue = meta.IsStackable ? count : (itemTemplateId * 397 ^ slot);
-            using (var cmd = new SQLiteCommand(@"
+            using (var cmd = new SqliteCommand(@"
 INSERT OR REPLACE INTO character_items (owner_scope, owner_id, character_id, list_type, slot_index, item_template_id, item_kind, stack_count, instance_value, durability, seal_flag, option_value, expire_time, marker_16)
 VALUES ('character', @cid, @cid, 0, @slot, @tid, @kind, @cnt, @inst, @dur, 0, 0, 0, @marker)", conn, tx))
             {
@@ -597,10 +597,10 @@ VALUES ('character', @cid, @cid, 0, @slot, @tid, @kind, @cnt, @inst, @dur, 0, 0,
 
         private static int GetCharacterLevel(string connStr, int characterId)
         {
-            using (var conn = new SQLiteConnection(connStr))
+            using (var conn = new SqliteConnection(connStr))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand("SELECT level FROM characters WHERE character_id=@cid", conn))
+                using (var cmd = new SqliteCommand("SELECT level FROM characters WHERE character_id=@cid", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", characterId);
                     var result = cmd.ExecuteScalar();

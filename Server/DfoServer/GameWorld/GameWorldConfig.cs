@@ -1,34 +1,42 @@
 ﻿using System;
-using System.Configuration;
 using System.IO;
 
 namespace DfoServer.GameWorld
 {
     public class GameWorldConfig
     {
-        private const string DefaultPvfRelativePath = @"Data\Pvf\Script.pvf";
+        private static readonly string[] DefaultPvfRelativePaths =
+        {
+            Path.Combine("Data", "Pvf", "Script.pvf"),
+            @"Data\Pvf\Script.pvf"
+        };
 
         public static string PvfArchivePath
         {
             get
             {
-                var configuredPath = ResolveConfiguredPath(ConfigurationManager.AppSettings["PvfArchivePath"]);
+                var envPath = Environment.GetEnvironmentVariable("PVF_ARCHIVE_PATH");
+                var configuredPath = ResolveConfiguredPath(envPath);
                 if (!string.IsNullOrWhiteSpace(configuredPath))
                     return configuredPath;
 
-                var defaultPath = ResolveConfiguredPath(DefaultPvfRelativePath);
-                if (!string.IsNullOrWhiteSpace(defaultPath))
-                    return defaultPath;
+                foreach (var relativePath in DefaultPvfRelativePaths)
+                {
+                    configuredPath = ResolveConfiguredPath(relativePath);
+                    if (!string.IsNullOrWhiteSpace(configuredPath))
+                        return configuredPath;
+                }
 
-                var fallbackArchive = FindFirstArchive(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "Pvf"));
+                var fallbackArchive = FindFirstArchive(Path.Combine(AppContext.BaseDirectory, "Data", "Pvf"));
                 if (!string.IsNullOrWhiteSpace(fallbackArchive))
                     return fallbackArchive;
 
-                var legacyArchive = FindFirstArchive(AppDomain.CurrentDomain.BaseDirectory);
+                var legacyArchive = FindFirstArchive(AppContext.BaseDirectory);
                 if (!string.IsNullOrWhiteSpace(legacyArchive))
                     return legacyArchive;
 
-                throw new FileNotFoundException("未找到 PVF 文件。请将 Script.pvf 放到 Data\\Pvf\\Script.pvf，或在 App.config 的 PvfArchivePath 中显式配置路径。");
+                throw new FileNotFoundException(
+                    "未找到 PVF 文件。请将 Script.pvf 放到 Data/Pvf/Script.pvf，或设置环境变量 PVF_ARCHIVE_PATH。");
             }
         }
 
@@ -37,7 +45,9 @@ namespace DfoServer.GameWorld
             if (string.IsNullOrWhiteSpace(configuredPath))
                 return string.Empty;
 
-            var fullPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configuredPath));
+            var fullPath = Path.IsPathRooted(configuredPath)
+                ? configuredPath
+                : Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, configuredPath));
             return File.Exists(fullPath) ? fullPath : string.Empty;
         }
 

@@ -1,4 +1,4 @@
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 using System.IO;
 
 namespace DfoServer.Infrastructure
@@ -7,17 +7,38 @@ namespace DfoServer.Infrastructure
     {
         public static string Initialize(string databasePath, string schemaFilePath)
         {
-            if (!File.Exists(databasePath))
-                SQLiteConnection.CreateFile(databasePath);
+            EnsureDatabaseFile(databasePath);
 
-            var connectionString = $"Data Source={databasePath};Version=3;";
-            using (var conn = new SQLiteConnection(connectionString))
+            var connectionString = BuildConnectionString(databasePath);
+            using (var conn = new SqliteConnection(connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand(File.ReadAllText(schemaFilePath), conn))
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = File.ReadAllText(schemaFilePath);
                     cmd.ExecuteNonQuery();
+                }
             }
             return connectionString;
+        }
+
+        public static string BuildConnectionString(string databasePath)
+        {
+            return new SqliteConnectionStringBuilder
+            {
+                DataSource = databasePath,
+                ForeignKeys = true
+            }.ConnectionString;
+        }
+
+        private static void EnsureDatabaseFile(string databasePath)
+        {
+            if (File.Exists(databasePath))
+                return;
+
+            var directory = Path.GetDirectoryName(databasePath);
+            if (!string.IsNullOrEmpty(directory))
+                Directory.CreateDirectory(directory);
         }
     }
 }

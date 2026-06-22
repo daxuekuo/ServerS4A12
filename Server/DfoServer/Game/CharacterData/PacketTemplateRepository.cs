@@ -1,6 +1,6 @@
 using DfoServer.Infrastructure;
 using System;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 
 namespace DfoServer.Game.CharacterData
 {
@@ -15,10 +15,10 @@ namespace DfoServer.Game.CharacterData
 
         public byte[] LoadBody(int characterId, byte command, ushort notiType, int occurrenceIndex)
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT body FROM packet_templates WHERE character_id=@cid AND command=@cmd AND noti_type=@nt AND occurrence_index=@oi",
                     conn))
                 {
@@ -35,10 +35,10 @@ namespace DfoServer.Game.CharacterData
         public void Save(int characterId, byte command, ushort notiType, int occurrenceIndex, byte[] body)
         {
             if (body == null) return;
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     @"INSERT OR REPLACE INTO packet_templates (character_id, command, noti_type, occurrence_index, body, body_length)
                       VALUES (@cid, @cmd, @nt, @oi, @body, @len)", conn))
                 {

@@ -1,5 +1,5 @@
 using System;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 using DfoServer.Game.SelectCharacter;
 using DfoServer.Infrastructure;
 
@@ -20,16 +20,16 @@ namespace DfoServer.Game.CharacterData
 
         public UserInfoMinimumTailSnapshot Load(int characterId)
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
                 return Load(conn, characterId);
             }
         }
 
-        public static UserInfoMinimumTailSnapshot Load(SQLiteConnection conn, int characterId)
+        public static UserInfoMinimumTailSnapshot Load(SqliteConnection conn, int characterId)
         {
-            using (var cmd = new SQLiteCommand(@"SELECT
+            using (var cmd = new SqliteCommand(@"SELECT
                 name_tag_item_id, creature_field1, creature_field2, creature_field3, creature_field4,
                 creature_buffer, stamina, fatigue_penalty, is_event_character, pc_room_id,
                 is_private_store, is_premium_pc_room, server_group_id, black_count, guild_level,
@@ -99,9 +99,9 @@ namespace DfoServer.Game.CharacterData
             }
         }
 
-        public static void Save(SQLiteConnection conn, int characterId, UserInfoMinimumTailSnapshot s)
+        public static void Save(SqliteConnection conn, int characterId, UserInfoMinimumTailSnapshot s)
         {
-            using (var cmd = new SQLiteCommand(@"INSERT OR REPLACE INTO character_subtype0_fields(
+            using (var cmd = new SqliteCommand(@"INSERT OR REPLACE INTO character_subtype0_fields(
                 character_id,
                 name_tag_item_id, creature_field1, creature_field2, creature_field3, creature_field4,
                 creature_buffer, stamina, fatigue_penalty, is_event_character, pc_room_id,
@@ -176,7 +176,7 @@ namespace DfoServer.Game.CharacterData
         
         
         
-        public static void MigrateFromBlobIfNeeded(SQLiteConnection conn)
+        public static void MigrateFromBlobIfNeeded(SqliteConnection conn)
         {
             try
             {
@@ -186,7 +186,7 @@ namespace DfoServer.Game.CharacterData
                     if (Convert.ToInt32(cmd.ExecuteScalar()) > 0) return;
                 }
 
-                using (var cmd = new SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT character_id, remaining_bytes FROM character_userinfo_blobs WHERE user_info_type=0 AND gate_or_count>0", conn))
                 using (var r = cmd.ExecuteReader())
                 {

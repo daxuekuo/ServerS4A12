@@ -8,11 +8,15 @@ namespace DfoServer
     {
         static void Main(string[] args)
         {
-            if (args != null && Array.IndexOf(args, "--selftest-buyskill") >= 0)
+            args ??= Array.Empty<string>();
+
+            if (Array.IndexOf(args, "--selftest-buyskill") >= 0)
             {
                 Environment.Exit(Game.Skills.BuySkillSelfTest.Run());
                 return;
             }
+
+            GameNetworkConfig.Configure(args);
 
             var server = new MultiStructureTcpServer();
 
@@ -25,6 +29,7 @@ namespace DfoServer
             server.Start(portConfigs);
 
             Console.WriteLine("Multi-structure TCP server started!");
+            Console.WriteLine($"Advertised server IP: {GameNetworkConfig.ServerIp} (ports 7001 channel, 10011 game)");
             Console.WriteLine("Press 's' for statistics, 'q' to quit.");
 
             while (true)

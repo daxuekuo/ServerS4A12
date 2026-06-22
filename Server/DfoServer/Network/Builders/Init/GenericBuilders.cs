@@ -1,5 +1,6 @@
 using DfoServer.Game.SelectCharacter;
 using System;
+using Microsoft.Data.Sqlite;
 
 namespace DfoServer.Network.Builders
 {
@@ -61,10 +62,10 @@ namespace DfoServer.Network.Builders
             var connStr = Infrastructure.SqliteDatabaseBootstrap.Initialize(
                 Infrastructure.ServerPaths.DatabasePath, Infrastructure.ServerPaths.SchemaFilePath);
             byte[] src = null;
-            using (var conn = new System.Data.SQLite.SQLiteConnection(connStr))
+            using (var conn = new SqliteConnection(connStr))
             {
                 conn.Open();
-                using (var cmd = new System.Data.SQLite.SQLiteCommand(
+                using (var cmd = new SqliteCommand(
                     "SELECT body FROM character_init_bodies WHERE character_id=@cid AND noti_type=@nt AND occurrence_index=@oi", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", cid);

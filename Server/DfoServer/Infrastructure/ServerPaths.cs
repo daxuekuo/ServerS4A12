@@ -1,23 +1,27 @@
 using System;
-using System.Configuration;
+using System.IO;
 
 namespace DfoServer.Infrastructure
 {
     public static class ServerPaths
     {
-        private static readonly string BaseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        private static readonly string BaseDirectory = AppContext.BaseDirectory;
 
         public static string DatabasePath
         {
             get
             {
-                var configured = ConfigurationManager.AppSettings["InventoryDatabasePath"];
+                var configured = Environment.GetEnvironmentVariable("INVENTORY_DATABASE_PATH");
                 return string.IsNullOrWhiteSpace(configured)
-                    ? System.IO.Path.Combine(BaseDirectory, "Data", "inventory.db")
-                    : System.IO.Path.Combine(BaseDirectory, configured);
+                    ? Path.Combine(BaseDirectory, "Data", "inventory.db")
+                    : Path.IsPathRooted(configured)
+                        ? configured
+                        : Path.Combine(BaseDirectory, configured);
             }
         }
 
-        public static string SchemaFilePath => System.IO.Path.Combine(BaseDirectory, "Sqlite", "item_schema.sql");
+        public static string SchemaFilePath => Path.Combine(BaseDirectory, "Sqlite", "item_schema.sql");
+
+        public static string ChannelInfoFilePath => Path.Combine(BaseDirectory, "channel_info.etc");
     }
 }

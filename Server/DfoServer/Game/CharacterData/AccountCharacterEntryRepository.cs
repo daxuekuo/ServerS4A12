@@ -1,7 +1,7 @@
 using DfoServer.Infrastructure;
 using System;
 using System.Collections.Generic;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 
 namespace DfoServer.Game.CharacterData
 {
@@ -25,10 +25,10 @@ namespace DfoServer.Game.CharacterData
         public List<AccountCharacterEntry> LoadAll()
         {
             var list = new List<AccountCharacterEntry>();
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand("SELECT entry_index, slot_index, name, body_after_name FROM account_character_entries ORDER BY entry_index", conn))
+                using (var cmd = new SqliteCommand("SELECT entry_index, slot_index, name, body_after_name FROM account_character_entries ORDER BY entry_index", conn))
                 using (var r = cmd.ExecuteReader())
                 {
                     while (r.Read())
@@ -48,7 +48,7 @@ namespace DfoServer.Game.CharacterData
 
         public void SaveAll(List<AccountCharacterEntry> entries)
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
                 Sqlite.SqliteSchemaMigrator.EnsureColumns(conn, "account_character_entries", new[]
@@ -61,11 +61,11 @@ namespace DfoServer.Game.CharacterData
                 });
                 using (var tx = conn.BeginTransaction())
                 {
-                    using (var del = new SQLiteCommand("DELETE FROM account_character_entries", conn, tx))
+                    using (var del = new SqliteCommand("DELETE FROM account_character_entries", conn, tx))
                         del.ExecuteNonQuery();
                     foreach (var e in entries)
                     {
-                        using (var cmd = new SQLiteCommand(
+                        using (var cmd = new SqliteCommand(
                             "INSERT INTO account_character_entries (entry_index, slot_index, name, body_after_name) VALUES (@ei, @si, @n, @b)", conn, tx))
                         {
                             cmd.Parameters.AddWithValue("@ei", e.EntryIndex);
@@ -93,10 +93,10 @@ namespace DfoServer.Game.CharacterData
         public List<(byte command, ushort type, byte[] body)> LoadAll()
         {
             var list = new List<(byte, ushort, byte[])>();
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand("SELECT command, noti_type, body FROM getuserinfo_extra_packets ORDER BY seq", conn))
+                using (var cmd = new SqliteCommand("SELECT command, noti_type, body FROM getuserinfo_extra_packets ORDER BY seq", conn))
                 using (var r = cmd.ExecuteReader())
                 {
                     while (r.Read())
@@ -108,17 +108,17 @@ namespace DfoServer.Game.CharacterData
 
         public void SaveAll(List<(byte command, ushort type, byte[] body)> packets)
         {
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
                 using (var tx = conn.BeginTransaction())
                 {
-                    using (var del = new SQLiteCommand("DELETE FROM getuserinfo_extra_packets", conn, tx))
+                    using (var del = new SqliteCommand("DELETE FROM getuserinfo_extra_packets", conn, tx))
                         del.ExecuteNonQuery();
                     for (int i = 0; i < packets.Count; i++)
                     {
                         var p = packets[i];
-                        using (var cmd = new SQLiteCommand(
+                        using (var cmd = new SqliteCommand(
                             "INSERT INTO getuserinfo_extra_packets (seq, command, noti_type, body) VALUES (@s, @c, @t, @b)", conn, tx))
                         {
                             cmd.Parameters.AddWithValue("@s", i);

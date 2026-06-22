@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 
 namespace DfoServer.Game.Inventory
 {
@@ -150,7 +150,7 @@ namespace DfoServer.Game.Inventory
                 RunMigrationsInternal(connection);
         }
 
-        private void RunMigrationsInternal(SQLiteConnection connection)
+        private void RunMigrationsInternal(SqliteConnection connection)
         {
             DfoServer.Sqlite.SqliteSchemaMigrator.EnsureColumns(connection, "characters", new[]
             {
@@ -170,7 +170,7 @@ namespace DfoServer.Game.Inventory
             DfoServer.Game.CharacterData.SqliteSubtype0FieldsRepository.MigrateFromBlobIfNeeded(connection);
         }
 
-        private void MigrateSubtype1BlobIfNeeded(SQLiteConnection connection)
+        private void MigrateSubtype1BlobIfNeeded(SqliteConnection connection)
         {
             try
             {
@@ -875,14 +875,14 @@ ORDER BY slot_index;";
             }
         }
 
-        private SQLiteConnection OpenConnection()
+        private SqliteConnection OpenConnection()
         {
-            var connection = new SQLiteConnection(_connectionString);
+            var connection = new SqliteConnection(_connectionString);
             connection.Open();
             return connection;
         }
 
-        private void MigrateAccountCargoFromPacketTemplates(SQLiteConnection connection)
+        private void MigrateAccountCargoFromPacketTemplates(SqliteConnection connection)
         {
             using (var check = connection.CreateCommand())
             {
@@ -983,7 +983,7 @@ VALUES (
             }
         }
 
-        private bool HasSeedData(SQLiteConnection connection)
+        private bool HasSeedData(SqliteConnection connection)
         {
             using (var command = connection.CreateCommand())
             {
@@ -993,7 +993,7 @@ VALUES (
             }
         }
 
-        private void SeedInitialSnapshot(SQLiteConnection connection, CharacterItemListSnapshot snapshot)
+        private void SeedInitialSnapshot(SqliteConnection connection, CharacterItemListSnapshot snapshot)
         {
             using (var transaction = connection.BeginTransaction())
             {
@@ -1034,7 +1034,7 @@ VALUES (
             }
         }
 
-        private List<MakeEquipListCodec.Entry> LoadEquipEntriesTx(SQLiteConnection connection, SQLiteTransaction transaction)
+        private List<MakeEquipListCodec.Entry> LoadEquipEntriesTx(SqliteConnection connection, SqliteTransaction transaction)
         {
             var entries = new List<MakeEquipListCodec.Entry>();
             using (var cmd = connection.CreateCommand())
@@ -1051,7 +1051,7 @@ VALUES (
             return entries;
         }
 
-        private void SaveEquipEntriesTx(SQLiteConnection connection, SQLiteTransaction transaction, List<MakeEquipListCodec.Entry> entries)
+        private void SaveEquipEntriesTx(SqliteConnection connection, SqliteTransaction transaction, List<MakeEquipListCodec.Entry> entries)
         {
             using (var cmd = connection.CreateCommand())
             {
@@ -1075,7 +1075,7 @@ VALUES (
             }
         }
 
-        private void InsertUnequippedEntry(SQLiteConnection connection, SQLiteTransaction transaction, int itemTemplateId, byte[] rawEntry)
+        private void InsertUnequippedEntry(SqliteConnection connection, SqliteTransaction transaction, int itemTemplateId, byte[] rawEntry)
         {
             using (var cmd = connection.CreateCommand())
             {
@@ -1088,7 +1088,7 @@ VALUES (
             }
         }
 
-        private byte[] LoadUnequippedEntry(SQLiteConnection connection, SQLiteTransaction transaction, int itemTemplateId)
+        private byte[] LoadUnequippedEntry(SqliteConnection connection, SqliteTransaction transaction, int itemTemplateId)
         {
             using (var cmd = connection.CreateCommand())
             {
@@ -1100,7 +1100,7 @@ VALUES (
             }
         }
 
-        private void DeleteUnequippedEntry(SQLiteConnection connection, SQLiteTransaction transaction, int itemTemplateId)
+        private void DeleteUnequippedEntry(SqliteConnection connection, SqliteTransaction transaction, int itemTemplateId)
         {
             using (var cmd = connection.CreateCommand())
             {
@@ -1113,7 +1113,7 @@ VALUES (
         }
 
         private MakeEquipListCodec.DisplayFields? LoadDisplayFieldsFromCharacterItem(
-            SQLiteConnection connection, SQLiteTransaction transaction, InventoryListType listType, short slotIndex)
+            SqliteConnection connection, SqliteTransaction transaction, InventoryListType listType, short slotIndex)
         {
             using (var cmd = connection.CreateCommand())
             {
@@ -1202,7 +1202,7 @@ VALUES (
         
         
         
-        private bool HandleUnequipFromSlot(SQLiteConnection connection, SQLiteTransaction transaction, int equipSlot)
+        private bool HandleUnequipFromSlot(SqliteConnection connection, SqliteTransaction transaction, int equipSlot)
         {
             var entries = LoadEquipEntriesTx(connection, transaction);
             var removed = entries.Find(e => e.Slot == equipSlot);
@@ -1218,7 +1218,7 @@ VALUES (
             return true;
         }
 
-        private EquipOutcome HandleEquipSlotMove(SQLiteConnection connection, SQLiteTransaction transaction,
+        private EquipOutcome HandleEquipSlotMove(SqliteConnection connection, SqliteTransaction transaction,
             InventoryMoveRequest request, ItemRecord mainSource, InventoryListType dbSrcList)
         {
             var entries = LoadEquipEntriesTx(connection, transaction);
@@ -1312,7 +1312,7 @@ VALUES (
 
         
         
-        private void InsertEquipToContainer(SQLiteConnection connection, SQLiteTransaction transaction, InventoryListType listType, short slot, int itemId, byte[] entryRaw)
+        private void InsertEquipToContainer(SqliteConnection connection, SqliteTransaction transaction, InventoryListType listType, short slot, int itemId, byte[] entryRaw)
         {
             if (listType == InventoryListType.Pet)
             {
@@ -1387,7 +1387,7 @@ VALUES (
                 expireTime: 0, marker16: -1, petSerialOrHandle: 0, extraJson: extraJson);
         }
 
-        private byte[] FindEntryTemplate(SQLiteConnection connection, SQLiteTransaction transaction, List<MakeEquipListCodec.Entry> entries, int slot)
+        private byte[] FindEntryTemplate(SqliteConnection connection, SqliteTransaction transaction, List<MakeEquipListCodec.Entry> entries, int slot)
         {
             var existing = entries.Find(e => e.Slot == slot);
             if (existing != null) return existing.Raw;
@@ -1395,7 +1395,7 @@ VALUES (
         }
 
         
-        private byte[] LoadCachedEntryBySlot(SQLiteConnection connection, SQLiteTransaction transaction, int slot)
+        private byte[] LoadCachedEntryBySlot(SqliteConnection connection, SqliteTransaction transaction, int slot)
         {
             using (var cmd = connection.CreateCommand())
             {
@@ -1459,7 +1459,7 @@ VALUES (
             }
         }
 
-        private  Dictionary<InventoryListType, ushort> LoadContainerState(SQLiteConnection connection)
+        private  Dictionary<InventoryListType, ushort> LoadContainerState(SqliteConnection connection)
         {
             var states = new Dictionary<InventoryListType, ushort>();
 
@@ -1486,7 +1486,7 @@ WHERE character_id = @characterId;";
             return states.TryGetValue(listType, out var value) ? value : (ushort)0;
         }
 
-        private  AccountCargoStateSnapshot LoadAccountCargoState(SQLiteConnection connection)
+        private  AccountCargoStateSnapshot LoadAccountCargoState(SqliteConnection connection)
         {
             using (var command = connection.CreateCommand())
             {
@@ -1511,7 +1511,7 @@ WHERE account_id = @accountId;";
             }
         }
 
-        private  ushort CountAccountCargoItems(SQLiteConnection connection)
+        private  ushort CountAccountCargoItems(SqliteConnection connection)
         {
             using (var command = connection.CreateCommand())
             {
@@ -1525,7 +1525,7 @@ WHERE owner_scope = 'account' AND owner_id = @accountId AND list_type = @listTyp
             }
         }
 
-        private  void UpsertContainerState(SQLiteConnection connection, SQLiteTransaction transaction, InventoryListType listType, ushort listParam16)
+        private  void UpsertContainerState(SqliteConnection connection, SqliteTransaction transaction, InventoryListType listType, ushort listParam16)
         {
             using (var command = connection.CreateCommand())
             {
@@ -1540,7 +1540,7 @@ VALUES (@characterId, @listType, @listParam16);";
             }
         }
 
-        private  void UpsertAccountCargoState(SQLiteConnection connection, SQLiteTransaction transaction, AccountCargoStateSnapshot state)
+        private  void UpsertAccountCargoState(SqliteConnection connection, SqliteTransaction transaction, AccountCargoStateSnapshot state)
         {
             using (var command = connection.CreateCommand())
             {
@@ -1556,22 +1556,22 @@ VALUES (@accountId, @selectionKey, @value32, @itemCount, CURRENT_TIMESTAMP);";
             }
         }
 
-        private  void InsertCommonItem(SQLiteConnection connection, SQLiteTransaction transaction, InventoryListType listType, CommonInventoryItem item)
+        private  void InsertCommonItem(SqliteConnection connection, SqliteTransaction transaction, InventoryListType listType, CommonInventoryItem item)
         {
             InsertCharacterItem(connection, transaction, listType, item.SlotIndex, item.ItemTemplateId, InferCommonItemKind(item), item.CountOrInstanceValue, item.CountOrInstanceValue, item.Durability, item.SealFlag, 0, item.ExpireTime, item.Marker16, 0, SerializeCommon(item));
         }
 
-        private  void InsertAvatarItem(SQLiteConnection connection, SQLiteTransaction transaction, AvatarInventoryItem item)
+        private  void InsertAvatarItem(SqliteConnection connection, SqliteTransaction transaction, AvatarInventoryItem item)
         {
             InsertCharacterItem(connection, transaction, InventoryListType.Avatar, item.SlotIndex, item.AvatarItemId, "avatar", 0, 0, 0, 0, item.OptionValue, 0, item.UnknownFixed30, 0, SerializeAvatar(item));
         }
 
-        private  void InsertPetItem(SQLiteConnection connection, SQLiteTransaction transaction, PetInventoryItem item)
+        private  void InsertPetItem(SqliteConnection connection, SqliteTransaction transaction, PetInventoryItem item)
         {
             InsertCharacterItem(connection, transaction, InventoryListType.Pet, item.SlotIndex, item.CreatureItemId, "pet", 0, 0, 0, 0, 0, 0, 0, item.CreatureSerialOrHandle, SerializePet(item));
         }
 
-        private  void InsertCharacterItem(SQLiteConnection connection, SQLiteTransaction transaction, InventoryListType listType, short slotIndex, int templateId, string itemKind, int stackCount, int instanceValue, ushort durability, byte sealFlag, byte optionValue, int expireTime, int marker16, int petSerialOrHandle, string extraJson)
+        private  void InsertCharacterItem(SqliteConnection connection, SqliteTransaction transaction, InventoryListType listType, short slotIndex, int templateId, string itemKind, int stackCount, int instanceValue, ushort durability, byte sealFlag, byte optionValue, int expireTime, int marker16, int petSerialOrHandle, string extraJson)
         {
             using (var command = connection.CreateCommand())
             {
@@ -1604,7 +1604,7 @@ VALUES (
             }
         }
 
-        private void InsertAccountCargoItem(SQLiteConnection connection, SQLiteTransaction transaction, CommonInventoryItem item)
+        private void InsertAccountCargoItem(SqliteConnection connection, SqliteTransaction transaction, CommonInventoryItem item)
         {
             using (var command = connection.CreateCommand())
             {
@@ -1730,7 +1730,7 @@ VALUES (
             return requestedCount;
         }
 
-        private  void UpdateStackCount(SQLiteConnection connection, SQLiteTransaction transaction, long itemUid, int stackCount)
+        private  void UpdateStackCount(SqliteConnection connection, SqliteTransaction transaction, long itemUid, int stackCount)
         {
             using (var command = connection.CreateCommand())
             {
@@ -1747,7 +1747,7 @@ WHERE item_uid = @itemUid;";
             }
         }
 
-        private  void UpdateItemPosition(SQLiteConnection connection, SQLiteTransaction transaction, long itemUid, InventoryListType listType, short slotIndex)
+        private  void UpdateItemPosition(SqliteConnection connection, SqliteTransaction transaction, long itemUid, InventoryListType listType, short slotIndex)
         {
             using (var command = connection.CreateCommand())
             {
@@ -1765,7 +1765,7 @@ WHERE item_uid = @itemUid;";
             }
         }
 
-        private  void DeleteItem(SQLiteConnection connection, SQLiteTransaction transaction, long itemUid)
+        private  void DeleteItem(SqliteConnection connection, SqliteTransaction transaction, long itemUid)
         {
             using (var command = connection.CreateCommand())
             {
@@ -1776,7 +1776,7 @@ WHERE item_uid = @itemUid;";
             }
         }
 
-        private  void DeleteCharacterItemSlot(SQLiteConnection connection, SQLiteTransaction transaction, InventoryListType listType, short slotIndex)
+        private  void DeleteCharacterItemSlot(SqliteConnection connection, SqliteTransaction transaction, InventoryListType listType, short slotIndex)
         {
             using (var command = connection.CreateCommand())
             {
@@ -1794,7 +1794,7 @@ WHERE item_uid = @itemUid;";
         
         
         
-        private  WalletState LoadWallet(SQLiteConnection connection, SQLiteTransaction transaction)
+        private  WalletState LoadWallet(SqliteConnection connection, SqliteTransaction transaction)
         {
             var snap = CurrencyService.LoadWallet(connection, transaction, DefaultCharacterId);
             var w = new WalletState { Gold = snap.Gold, Coin = snap.Cera };
@@ -1810,13 +1810,13 @@ WHERE item_uid = @itemUid;";
             return w;
         }
 
-        private  void UpdateWallet(SQLiteConnection connection, SQLiteTransaction transaction, int gold, int coin)
+        private  void UpdateWallet(SqliteConnection connection, SqliteTransaction transaction, int gold, int coin)
         {
             CurrencyService.UpdateGold(connection, transaction, DefaultCharacterId, gold);
             CurrencyService.UpdateCera(connection, transaction, DefaultCharacterId, coin);
         }
 
-        private ItemRecord FindItemByTemplateId(SQLiteConnection connection, SQLiteTransaction transaction, InventoryListType listType, int templateId)
+        private ItemRecord FindItemByTemplateId(SqliteConnection connection, SqliteTransaction transaction, InventoryListType listType, int templateId)
         {
             using (var command = connection.CreateCommand())
             {
@@ -1850,7 +1850,7 @@ LIMIT 1;";
             return null;
         }
 
-        private  int FindEmptySlot(SQLiteConnection connection, SQLiteTransaction transaction, InventoryListType listType, int slotStart = 0, int slotEnd = -1)
+        private  int FindEmptySlot(SqliteConnection connection, SqliteTransaction transaction, InventoryListType listType, int slotStart = 0, int slotEnd = -1)
         {
             var occupiedSlots = new HashSet<int>();
             using (var command = connection.CreateCommand())
@@ -1889,7 +1889,7 @@ ORDER BY slot_index;";
             }
         }
 
-        private  void InsertSplitItem(SQLiteConnection connection, SQLiteTransaction transaction, ItemRecord source, InventoryListType listType, short slotIndex, int moveCount)
+        private  void InsertSplitItem(SqliteConnection connection, SqliteTransaction transaction, ItemRecord source, InventoryListType listType, short slotIndex, int moveCount)
         {
             InsertCharacterItem(
                 connection,
@@ -1909,14 +1909,14 @@ ORDER BY slot_index;";
                 source.ExtraJson);
         }
 
-        private  void SwapItems(SQLiteConnection connection, SQLiteTransaction transaction, ItemRecord source, ItemRecord destination)
+        private  void SwapItems(SqliteConnection connection, SqliteTransaction transaction, ItemRecord source, ItemRecord destination)
         {
             UpdateItemPosition(connection, transaction, source.ItemUid, source.ListType, short.MinValue);
             UpdateItemPosition(connection, transaction, destination.ItemUid, source.ListType, source.SlotIndex);
             UpdateItemPosition(connection, transaction, source.ItemUid, destination.ListType, destination.SlotIndex);
         }
 
-        private  ItemRecord LoadItemRecord(SQLiteConnection connection, SQLiteTransaction transaction, InventoryListType listType, short slotIndex)
+        private  ItemRecord LoadItemRecord(SqliteConnection connection, SqliteTransaction transaction, InventoryListType listType, short slotIndex)
         {
             using (var command = connection.CreateCommand())
             {
@@ -1940,7 +1940,7 @@ WHERE character_id = @characterId AND list_type = @listType AND slot_index = @sl
             }
         }
 
-        private  List<ItemRecord> LoadItemsByListType(SQLiteConnection connection, SQLiteTransaction transaction, InventoryListType listType)
+        private  List<ItemRecord> LoadItemsByListType(SqliteConnection connection, SqliteTransaction transaction, InventoryListType listType)
         {
             var items = new List<ItemRecord>();
 
@@ -1966,7 +1966,7 @@ ORDER BY slot_index;";
             return items;
         }
 
-        private  ItemRecord ReadItemRecord(SQLiteDataReader reader)
+        private  ItemRecord ReadItemRecord(SqliteDataReader reader)
         {
             return new ItemRecord
             {
@@ -2004,7 +2004,7 @@ ORDER BY slot_index;";
             }
         }
 
-        private  void WriteAuditLog(SQLiteConnection connection, SQLiteTransaction transaction, string actionName, ItemRecord source, InventoryListType destinationListType, short destinationSlotIndex, int moveCount)
+        private  void WriteAuditLog(SqliteConnection connection, SqliteTransaction transaction, string actionName, ItemRecord source, InventoryListType destinationListType, short destinationSlotIndex, int moveCount)
         {
             using (var command = connection.CreateCommand())
             {
@@ -2029,7 +2029,7 @@ VALUES (
             }
         }
 
-        private  void WriteDeleteAuditLog(SQLiteConnection connection, SQLiteTransaction transaction, ItemRecord source, int deleteCount)
+        private  void WriteDeleteAuditLog(SqliteConnection connection, SqliteTransaction transaction, ItemRecord source, int deleteCount)
         {
             using (var command = connection.CreateCommand())
             {
@@ -2053,7 +2053,7 @@ VALUES (
             }
         }
 
-        private  void WriteBuyAuditLog(SQLiteConnection connection, SQLiteTransaction transaction, int itemTemplateId, short slotIndex, int buyGold, int buyCoin)
+        private  void WriteBuyAuditLog(SqliteConnection connection, SqliteTransaction transaction, int itemTemplateId, short slotIndex, int buyGold, int buyCoin)
         {
             using (var command = connection.CreateCommand())
             {
@@ -2075,7 +2075,7 @@ VALUES (
             }
         }
 
-        private  void WriteSellAuditLog(SQLiteConnection connection, SQLiteTransaction transaction, ItemRecord source, int sellCount, int goldDelta)
+        private  void WriteSellAuditLog(SqliteConnection connection, SqliteTransaction transaction, ItemRecord source, int sellCount, int goldDelta)
         {
             using (var command = connection.CreateCommand())
             {
@@ -2099,7 +2099,7 @@ VALUES (
             }
         }
 
-        private  void WriteSortAuditLog(SQLiteConnection connection, SQLiteTransaction transaction, InventoryListType listType, int affectedCount)
+        private  void WriteSortAuditLog(SqliteConnection connection, SqliteTransaction transaction, InventoryListType listType, int affectedCount)
         {
             using (var command = connection.CreateCommand())
             {
@@ -2117,7 +2117,7 @@ VALUES (
             }
         }
 
-        private  CommonInventoryItem ReadCommonItem(SQLiteDataReader reader, string extraJson)
+        private  CommonInventoryItem ReadCommonItem(SqliteDataReader reader, string extraJson)
         {
             return new CommonInventoryItem
             {
@@ -2135,7 +2135,7 @@ VALUES (
             };
         }
 
-        private  AvatarInventoryItem ReadAvatarItem(SQLiteDataReader reader, string extraJson)
+        private  AvatarInventoryItem ReadAvatarItem(SqliteDataReader reader, string extraJson)
         {
             return new AvatarInventoryItem
             {
@@ -2151,7 +2151,7 @@ VALUES (
             };
         }
 
-        private AvatarInventoryItem ReadEquipmentAsAvatarItem(SQLiteDataReader reader, string extraJson)
+        private AvatarInventoryItem ReadEquipmentAsAvatarItem(SqliteDataReader reader, string extraJson)
         {
             var common = ReadCommonItem(reader, extraJson);
             var buf = new byte[126];
@@ -2209,7 +2209,7 @@ VALUES (
             };
         }
 
-        private  PetInventoryItem ReadPetItem(SQLiteDataReader reader, string extraJson)
+        private  PetInventoryItem ReadPetItem(SqliteDataReader reader, string extraJson)
         {
             return new PetInventoryItem
             {

@@ -5,6 +5,7 @@ using DfoServer.Network.Builders;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Data.Sqlite;
 
 namespace DfoServer.Game.Skills
 {
@@ -51,6 +52,7 @@ namespace DfoServer.Game.Skills
                 try { if (File.Exists(tempDb + ext)) File.Delete(tempDb + ext); } catch { }
 
             var repo = new SqliteCharacterProgressRepository(tempDb, ServerPaths.SchemaFilePath);
+            EnsureTestCharacter(tempDb, cid);
             var seed = new SkillInfoSnapshot { Tail0 = 0, Tail1 = 37 };
             var p0 = new SkillInfoPageSnapshot { HeaderValue = 0x0005 };
             p0.Entries.Add(new SkillInfoEntrySnapshot { Slot = 0, SkillId = 5,   Level = 1 }); 
@@ -115,6 +117,7 @@ namespace DfoServer.Game.Skills
             foreach (var ext in new[] { "", "-wal", "-shm" })
                 try { if (File.Exists(tempDb2 + ext)) File.Delete(tempDb2 + ext); } catch { }
             var repo2 = new SqliteCharacterProgressRepository(tempDb2, ServerPaths.SchemaFilePath);
+            EnsureTestCharacter(tempDb2, cid);
             var seed2 = new SkillInfoSnapshot { Tail0 = 0, Tail1 = 5 };
             seed2.Pages.Add(new SkillInfoPageSnapshot { HeaderValue = 0x0005 });
             seed2.Pages.Add(new SkillInfoPageSnapshot { HeaderValue = 0x2BF2 });
@@ -129,6 +132,24 @@ namespace DfoServer.Game.Skills
 
             Console.WriteLine($"=== 结果: {_pass} PASS, {_fail} FAIL ===");
             return _fail == 0 ? 0 : 1;
+        }
+
+        private static void EnsureTestCharacter(string databasePath, int characterId)
+        {
+            using (var conn = new SqliteConnection(SqliteDatabaseBootstrap.BuildConnectionString(databasePath)))
+            {
+                conn.Open();
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"
+INSERT OR IGNORE INTO accounts (account_id, m_id, password_hash)
+VALUES (1, 'selftest', '');
+INSERT OR IGNORE INTO characters (character_id, account_id, name)
+VALUES (@cid, 1, 'selftest');";
+                    cmd.Parameters.AddWithValue("@cid", characterId);
+                    cmd.ExecuteNonQuery();
+                }
+            }
         }
 
         private static void Check(string label, bool ok)
